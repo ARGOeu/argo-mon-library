@@ -95,7 +95,7 @@ class RestResourceItem(RestResource):
                 del d2["_parent"]
                 d1 = {**d1, x: d2}
         # Return a JSON representation of the built dictionary
-        return json.dumps(d1)
+        return json.dumps(d1, default=str)
 
     @abc.abstractmethod
     def _fetchRoute(self) -> str:
@@ -180,7 +180,8 @@ class RestResourceList(OrderedDict, RestResource):
     @abc.abstractmethod
     def _createChild(self, data: dict):
         """Abstract method to be implemented by subclasses, to create the appropriate RestResourceItem instance"""
-        return RestResourceItem(self, {})
+        #return RestResourceItem(self, {})
+        raise Exception("Operation not supported or not implemented")
 
     def _fetch(self):
         """Fetch results from the REST API, using the fetch route denoted by self::_fetchRoute
@@ -208,6 +209,7 @@ class RestResourceList(OrderedDict, RestResource):
 
     def __iter__(self):
         """Iterate over all results, using self::_fetch for each page"""
+        self._currentPage = 0
         logger.debug("ITERING")
         while self._currentPage < self._pageCount:
             self._fetch()
@@ -219,22 +221,6 @@ class RestResourceList(OrderedDict, RestResource):
                     yield j[1]
         logger.debug("EOD")
 
-    def _iterN(self, n: int):
-        """
-        Iterate up to the n-th result, using self::_fetch for each page.
-        Used by __getitem__ to avoid fetching everying, when asking for an item by index instead of ID
-        """
-        logger.debug("ITERING up to " + str(n))
-        while self._currentPage * self._pageSize <= n:
-            self._fetch()
-            logger.debug(
-                "PAGE " + str(self._currentPage) + " of " + str(self._pageCount)
-            )
-            for i, j in enumerate(self.items()):
-                if i >= (self._currentPage - 1) * self._pageSize:
-                    yield j[1]
-        logger.debug("EOD(" + str(n) + ")")
-
     def __getitem__(self, id):
         """
         OrderedDict __getitem__ override.
@@ -244,7 +230,7 @@ class RestResourceList(OrderedDict, RestResource):
         upon success
         """
         if isinstance(id, int):
-            item = list(self._iterN(id))[id]
+            item = list(self)[id]
         else:
             item = super(OrderedDict, self).get(id)
             if item is None:
@@ -288,3 +274,6 @@ class RestResourceList(OrderedDict, RestResource):
             return ret
         else:
             raise Exception("Operation not supported or not implemented")
+
+    def __str__(self):
+        return "[{0}]".format(", ".join([str(x) for x in list(self)]))

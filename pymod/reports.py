@@ -1,124 +1,8 @@
 from .restresource import RestResourceList, RestResourceItem
+from .reportresults import ReportResults
+from .reportstatus import ReportStatus
 from datetime import datetime
 import json
-
-try:
-    from typing import List
-except ImportException:
-    from typing_extensions import List
-
-class ReportStatusGroupStatus(object):
-    timestamp = ""
-    value = ""
-
-    def __init__(self, data = {}):
-        if data is not None:
-            self.timestamp = datetime.strptime(data.get("timestamp"), '%Y-%m-%dT%H:%M:%SZ')
-            self.value = data.get("value")
-
-    def __str__(self):
-        return json.dumps(self.__dict__)
-
-
-class ReportStatusGroupEndpoint(object):
-    hostname = ""
-    service = ""
-    id = ""
-    url = ""
-    statuses = []
-
-    def __init__(self, data = {}):
-        if data is not None:
-            self.name= data.get("hostname")
-            self.service = data.get("service")
-            self.id = data.get("info").get("ID")
-            self.url = data.get("info").get("URL")
-            self.statuses = data.get("statuses")
-
-    @property
-    def statuses(self) -> List[ReportStatusGroupStatus]:
-        return [ReportStatusGroupStatus(x) for x in self._statuses]
-
-    @statuses.setter
-    def statuses(self, value):
-        self._statuses = value
-
-    def __str__(self):
-        return json.dumps(self.__dict__)
-
-class ReportStatusGroup(object):
-    name = ""
-    type = ""
-
-    def __init__(self, data = {}):
-        if data is not None:
-            self.name= data.get("name")
-            self.type = data.get("type")
-            self.statuses = data.get("statuses")
-            self.endpoints = data.get("endpoints")
-
-    @property
-    def statuses(self) -> List[ReportStatusGroupStatus]:
-        return [ReportStatusGroupStatus(x) for x in self._statuses]
-
-    @statuses.setter
-    def statuses(self, value):
-        self._statuses = value
-
-    @property
-    def endpoints(self) -> List[ReportStatusGroupEndpoint]:
-        return [ReportStatusGroupEndpoint(x) for x in self._endpoints]
-
-    @endpoints.setter
-    def endpoints(self, value):
-        self._endpoints = value
-
-    def __str__(self):
-        return json.dumps(self.__dict__)
-
-
-class ReportStatus(RestResourceItem):
-    @property
-    def groups(self) -> List[ReportStatusGroup]:
-        return [ReportStatusGroup(x) for x in self._groups]
-
-    @groups.setter
-    def groups(self, value):
-        self._groups = value
-
-    @property
-    def dataRoot(self):
-        return None
-
-    def _fetchRoute(self):
-        return "get_report_status"
-
-    def _fetchArgs(self) -> list:
-        return [self.id]
-
-    def _fetchParams(self) -> dict:
-        return {
-            "start_time": (str(self._parent._parent._parent._period._startDate) + "Z").replace(" ", "T"),
-            "end_time": (str(self._parent._parent._parent._period._endDate) + "Z").replace(" ", "T")
-        }
-
-
-class ReportResults(RestResourceItem):
-    @property
-    def dataRoot(self):
-        return None
-
-    def _fetchRoute(self):
-        return "get_report_results"
-
-    def _fetchArgs(self) -> list:
-        return [self.id]
-
-    def _fetchParams(self) -> dict:
-        return {
-            "start_time": (str(self._parent._parent._parent._period._startDate) + "Z").replace(" ", "T"),
-            "end_time": (str(self._parent._parent._parent._period._endDate) + "Z").replace(" ", "T")
-        }
 
 class ReportThresholds(object):
     availability = 0
@@ -144,7 +28,7 @@ class ReportProfile(object):
     type = ""
     name = ""
 
-    def __init__(self, data = {}):
+    def __init__(self, parent, data = {}):
         if data is not None:
             self.id = data.get("id")
             self.type = data.get("type")
@@ -152,6 +36,24 @@ class ReportProfile(object):
 
     def __str__(self):
         return json.dumps(self.__dict__)
+
+class ReportProfiles(RestResourceList):
+    def __init__(self, parent, data = {}):
+        super().__init__(parent, 1)
+        self._fetch()
+
+    def _fetch(self):
+        for i in self._parent._profiles:
+            self.update({i["id"]: ReportProfile(self, i)})
+            self._pageCount = 1
+            self._currentPage = 1
+
+    def byName(self, name: str):
+        for i in self:
+            if i.name == name:
+                return i
+        return None
+
 
 class ReportFilterTag(object):
     name = ""
@@ -167,24 +69,39 @@ class ReportFilterTag(object):
     def __str__(self):
         return json.dumps(self.__dict__)
 
-class ReportTopologySchemaGroup(object):
+class ReportTopologySchemaGroup(RestResourceItem):
     type = ""
     group = None
 
-    def __init__(self, data = {}):
+    def __init__(self, parent, data = {}):
+        super().__init__(parent, data)
         if data is not None:
             self.type = data.get("type")
-            self.group = ReportTopologySchemaGroup(data.get("group"))
+            if data.get("group") is not None:
+                self.group = ReportTopologySchemaGroup(self, data.get("group"))
+            else:
+                self.group = None
 
-class ReportTopologySchema(object):
+    def _fetchRoute(self):
+        return ""
+
+    def _fetchArgs(self) -> list:
+        return []
+
+class ReportTopologySchema(RestResourceItem):
     group: ReportTopologySchemaGroup = None
 
-    def __init__(self, data = {}):
+    def __init__(self, parent, data = {}):
+        super().__init__(parent, data)
         if data is not None:
-            self.group = ReportTopologySchemaGroup(data.get("group"))
+            self.group = ReportTopologySchemaGroup(self, data.get("group"))
 
-    def __str__(self):
-        return json.dumps(self.__dict__)
+    def _fetchRoute(self):
+        return ""
+
+    def _fetchArgs(self) -> list:
+        return []
+
 
 class ReportComputations(object):
     ar = False
@@ -235,7 +152,7 @@ class Report(RestResourceItem):
 
     @property
     def profiles(self) -> list:
-        return [ReportProfile(x) for x in self._profiles]
+        return ReportProfiles(self, self._profiles)
 
     @profiles.setter
     def profiles(self, value):
@@ -251,7 +168,7 @@ class Report(RestResourceItem):
 
     @property
     def topology_schema(self) -> ReportTopologySchema:
-        return ReportTopologySchema(self._topology_schema)
+        return ReportTopologySchema(self, self._topology_schema)
 
     @topology_schema.setter
     def topology_schema(self, value):
