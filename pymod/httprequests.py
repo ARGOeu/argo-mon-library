@@ -72,7 +72,7 @@ class HttpRequests(object):
                 reqkwargs["headers"]["X-Api-Key"] = "{0}".format(self.apikey)
 
             reqmethod = getattr(requests, m)
-            logger.debug("doing a " + reqmethod.__name__ + " request on " + url)
+            logger.debug("doing a " + reqmethod.__name__ + " request on " + url + " with params " + str(params))
             r = reqmethod(url, data=body, params=params, **reqkwargs)
 
             content = r.content

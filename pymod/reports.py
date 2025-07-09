@@ -55,19 +55,36 @@ class ReportProfiles(RestResourceList):
         return None
 
 
-class ReportFilterTag(object):
+class ReportFilterTag(RestResourceItem):
     name = ""
     value = ""
     context = ""
 
-    def __init__(self, data = {}):
+    def __init__(self, parent, data = {}):
+        super().__init__(parent, data)
         if data is not None:
             self.name = data.get("name")
             self.value = data.get("value")
             self.context = data.get("context")
 
-    def __str__(self):
-        return json.dumps(self.__dict__)
+    def _fetchRoute(self):
+        return ""
+
+    def _fetchArgs(self) -> list:
+        return []
+
+
+class ReportFilterTags(RestResourceList):
+    def __init__(self, parent, data = {}):
+        super().__init__(parent, 1)
+        self._fetch()
+
+    def _fetch(self):
+        for i in self._parent._filter_tags:
+            self.update({i["name"]: ReportFilterTag(self, i)})
+            self._pageCount = 1
+            self._currentPage = 1
+
 
 class ReportTopologySchemaGroup(RestResourceItem):
     type = ""
@@ -160,7 +177,7 @@ class Report(RestResourceItem):
 
     @property
     def filter_tags(self) -> list:
-        return [ReportFilterTag(x) for x in self._filter_tags]
+        return ReportFilterTags(self, self._filter_tags)
 
     @filter_tags.setter
     def filter_tags(self, value):

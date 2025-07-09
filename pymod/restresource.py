@@ -216,9 +216,12 @@ class RestResourceList(OrderedDict, RestResource):
             logger.debug(
                 "PAGE " + str(self._currentPage) + " of " + str(self._pageCount)
             )
-            for i, j in enumerate(self.items()):
-                if i >= (self._currentPage - 1) * self._pageSize:
-                    yield j[1]
+            if len(self.items()) == 0:
+                return None
+            else:
+                for i, j in enumerate(self.items()):
+                    if i >= (self._currentPage - 1) * self._pageSize:
+                        yield j[1]
         logger.debug("EOD")
 
     def __getitem__(self, id):

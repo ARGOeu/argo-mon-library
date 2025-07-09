@@ -61,5 +61,6 @@ class ReportResults(RestResourceItem):
     def _fetchParams(self) -> dict:
         return {
             "start_time": (str(self._parent._parent._parent._period._startDate) + "Z").replace(" ", "T"),
-            "end_time": (str(self._parent._parent._parent._period._endDate) + "Z").replace(" ", "T")
+            "end_time": (str(self._parent._parent._parent._period._endDate) + "Z").replace(" ", "T"),
+            "granularity": self._parent._parent._parent._period._granularity
         }

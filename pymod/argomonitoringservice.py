@@ -1,5 +1,6 @@
 from .httprequests import HttpRequests
 from .reports import Reports, Report 
+from .exceptions import MonException
 from typing import Optional, Union
 from datetime import datetime
 try:
@@ -19,7 +20,7 @@ class Period(object):
             elif startDate == "today":
                 self._startDate = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             else:
-                self._startDate = datetime.strptime(startDate, '%Y-%m-%dT%H:%M%SZ')
+                self._startDate = datetime.strptime(startDate, '%Y-%m-%dT%H:%M:%SZ')
         else:
             self._startDate = startDate
         if endDate is None:
@@ -31,10 +32,14 @@ class Period(object):
                 elif endDate == "today":
                     self._endDate = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
                 else:
-                    self._endDate = datetime.strptime(endDate, '%Y-%m-%dT%H:%M%SZ')
+                    self._endDate = datetime.strptime(endDate, '%Y-%m-%dT%H:%M:%SZ')
             else:
                 self._endDate = endDate
-        self._granularity = granularity
+        match granularity:
+            case "daily" | "monthly" | "custom":
+                self._granularity = granularity
+            case _:
+                raise MonException("Invalid granularity parameter")
 
 
 class ArgoMonitoringService(object):
@@ -81,5 +86,5 @@ class ArgoMonitoringService(object):
         The optional granularity parameter may take the values of 'daily' (default) or 'monthly' and will be used
         to group result values per the respected time frame.
         """
-        self._period = Period(startDate, endDate)
+        self._period = Period(startDate, endDate, granularity)
         return self
