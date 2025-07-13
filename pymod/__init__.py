@@ -39,5 +39,7 @@ from .exceptions import (
 from .argomonitoringservice import (
     ArgoMonitoringService,
     Reports,
-    Report
+    Report,
+    ReportStatus,
+    ReportResults
 )

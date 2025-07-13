@@ -6,6 +6,10 @@ class ReportMocks(object):
 
     GET_REPORT_RESPONSE = LIST_REPORTS_RESPONSE
 
+    GET_REPORT_STATUS_RESPONSE = """{"groups": [{"name": "ARGO_MON", "type": "SERVICEGROUPS", "statuses": [{"timestamp": "2025-06-01T00:00:00Z", "value": "OK"}, {"timestamp": "2025-06-01T23:59:59Z", "value": "OK"}], "endpoints": [{"hostname": "www.example.com", "service": "www.example.com-example.api", "info": {"ID": "EXAMPLE01", "URL": "https://www.example.com/api/action?foo=bar"}, "statuses": [{"timestamp": "2025-06-01T00:00:00Z", "value": "OK"}, {"timestamp": "2025-06-01T23:59:59Z", "value": "OK"}]}]}]}"""
+
+    GET_REPORT_RESULTS_RESPONSE = """{"results": [{"name": "TENANT01", "type": "PROJECT", "results": [{"date": "2025-06-01", "availability": "100", "reliability": "100"}], "groups": [{"name": "ARGO_MON", "type": "SERVICEGROUPS", "results": [{"date": "2025-06-01", "availability": "100", "reliability": "100", "unknown": "0", "uptime": "1", "downtime": "0"}]}]}]}"""
+
     list_reports_urlmatch = dict(
         netloc="localhost",
         path="/api/v2/reports",
@@ -15,6 +19,18 @@ class ReportMocks(object):
     get_report_urlmatch = dict(
         netloc="localhost",
         path="/api/v2/reports/efd48668-e24a-4a2c-a53f-3f388664b691",
+        method="GET"
+    )
+
+    get_report_status_urlmatch = dict(
+        netloc="localhost",
+        path="/api/v3/status/REPORT01",
+        method="GET"
+    )
+
+    get_report_results_urlmatch = dict(
+        netloc="localhost",
+        path="/api/v3/results/REPORT01",
         method="GET"
     )
 
@@ -29,3 +45,15 @@ class ReportMocks(object):
         assert url.path == "/api/v2/reports/efd48668-e24a-4a2c-a53f-3f388664b691"
         assert request.method == "GET"
         return response(200, self.GET_REPORT_RESPONSE, None, None, 5, request)
+
+    @urlmatch(**get_report_status_urlmatch)
+    def get_report_status_mock(self, url, request):
+        assert url.path == "/api/v3/status/REPORT01"
+        assert request.method == "GET"
+        return response(200, self.GET_REPORT_STATUS_RESPONSE, None, None, 5, request)
+
+    @urlmatch(**get_report_results_urlmatch)
+    def get_report_results_mock(self, url, request):
+        assert url.path == "/api/v3/results/REPORT01"
+        assert request.method == "GET"
+        return response(200, self.GET_REPORT_RESULTS_RESPONSE, None, None, 5, request)
