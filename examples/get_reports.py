@@ -39,14 +39,22 @@ if __name__ == "__main__":
         for m in mon.reports:
             i+=1
             print("Report #{0}".format(i))
-            print(" ID: {0}".format(m.id))
-            print(" Name: {0}".format(m.name))
-            print(" Description: {0}".format(m.description))
-            print(" Thresholds:")
-            print("   - Availability: {0}%".format(m.thresholds.availability))
-            print("   - Reliability: {0}%".format(m.thresholds.reliability))
-            print("   - Uptime: {0}".format(m.thresholds.uptime))
-            print("   - Unknown: {0}".format(m.thresholds.unknown))
-            print("   - Downtime: {0}".format(m.thresholds.downtime))
+            print("  ID: {0}".format(m.id))
+            print("  Name: {0}".format(m.name))
+            print("  Description: {0}".format(m.description))
+            print("  Thresholds:")
+            print("    - Availability: {0}%".format(m.thresholds.availability))
+            print("    - Reliability: {0}%".format(m.thresholds.reliability))
+            print("    - Uptime: {0}".format(m.thresholds.uptime))
+            print("    - Unknown: {0}".format(m.thresholds.unknown))
+            print("    - Downtime: {0}".format(m.thresholds.downtime))
+            print("  Topology Schema:")
+            g = m.topology_schema.group
+            i = 0
+            while g is not None:
+                print(" {0} ↳ {1}".format("".join([" " for x in range(0, i)]), g.type))
+                g = g.group
+                i = i + 2
+
     except Exception as e:
         print("Error while iterating reports:", str(e))

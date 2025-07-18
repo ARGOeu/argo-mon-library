@@ -21,14 +21,6 @@ class ReportResultsGroup(RestResourceItem):
     def results(self, value):
         self._results = value
 
-    @property
-    def endpoints(self):
-        return ReportResultsGroupEndpoints(self)
-
-    @endpoints.setter
-    def endpoints(self, value):
-        self._endpoints = value
-
     def _fetchRoute(self):
         return ""
 

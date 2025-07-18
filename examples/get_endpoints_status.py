@@ -7,7 +7,7 @@ import sys
 import json
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Simple Argo Monitoring metric fetch example")
+    parser = ArgumentParser(description="Simple Argo Monitoring status fetch example")
     parser.add_argument(
         "--host",
         type=str,
@@ -26,7 +26,10 @@ if __name__ == "__main__":
         "--report", type=str, required=True, help="report name"
     )
     parser.add_argument(
-        "--date", type=str, required=True, help="effective date for report status, in YYYY-MM-DD format"
+        "--start-date", type=str, required=True, help="start date for report status, in YYYY-MM-DD format"
+    )
+    parser.add_argument(
+        "--end-date", type=str, help="optional end date for report status, in YYYY-MM-DD format (default: same as start date)"
     )
     args = parser.parse_args()
 
@@ -40,11 +43,13 @@ if __name__ == "__main__":
     else:
         api_key = args.api_key
 
+    if args.end_date is None:
+        args.end_date = args.start_date
     try:
         mon = ArgoMonitoringService(args.host, api_key)
-        for group in mon.period(datetime.strptime(args.date, "%Y-%m-%d")).reports.byName(args.report).status.groups:
+        for group in mon.period(datetime.strptime(args.start_date, "%Y-%m-%d"), datetime.strptime(args.end_date, "%Y-%m-%d")).reports.byName(args.report).status.groups:
             for endpoint in group.endpoints:
                 for status in endpoint.statuses:
-                    print(group.name, endpoint.id, status.timestamp, status.value)
+                    print(group.name, "[" + endpoint.id + "]", status.timestamp, status.value)
     except Exception as e:
-        print("Error while iterating report status groups:", str(e))
+        print("Error while iterating report status data:", str(e))

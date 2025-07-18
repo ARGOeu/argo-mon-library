@@ -47,7 +47,8 @@ mon = ArgoMonitoringService(endpoint="mon_endpoint", apikey="your_api_key")
 In the `examples` folder, you may find the following library usage examples:
 
 * getting a list of reports for a tenant (`examples/get_reports.py`)
-* getting the status for each endpoint of all groups define in a report
+* getting the status for each endpoint of all groups defined in a report
+* getting daily/monthy A/R results for groups defined in a report
 
 Help on running each example is available by running the example with `-h`.
 
@@ -59,15 +60,31 @@ Assuming you've saved your API key in a file under `~/mon.key`, you may run the 
 python3 ./examples/get_reports.py --host api.devel.mon.argo.grnet.gr --api-key ~/mon.key -f
 ```
 
+This will print out a list of reports for the tenant, along with some information about the report, such as thresholds and the topology schema group hierarchy
+
 ### Getting report endpoint statuses
 
-Assuming you've saved your API key in a file under `~/mon.key`, you may run the second example against the development instance of the service with
+To get status data for endpoints belonging to groups of a report, run
 
 ```bash
-python3 ./examples/get_endpoint_statuses.py --host api.devel.mon.argo.grnet.gr --api-key ~/mon.key -f --report REPORTNAME --date YYYY-MM-DD
+python3 ./examples/get_endpoint_statuses.py --host api.devel.mon.argo.grnet.gr --api-key ~/mon.key -f --report REPORTNAME --start-date YYYY-MM-DD
 ```
 
-where `REPORTNAME` is the name of a report, as listed in the 1st example, and `YYYY-MM-DD` is an ISO formated date
+where `REPORTNAME` is the name of a report, as listed in the 1st example, and `YYYY-MM-DD` is an ISO formated date. An optional end date may be passed with `--end-date YYY-MM-DD`, which otherwise defaults to the day defined by `--start-date`.
+
+### Getting report A/R results
+
+To get daily A/R results for all groups in a report, run
+
+```bash
+python3 ./examples/get_endpoint_statuses.py --host api.devel.mon.argo.grnet.gr --api-key ~/mon.key -f --report REPORTNAME --start-date YYYY-MM-DD
+```
+
+where `REPORTNAME` is the name of a report, as listed in the 1st example, and `YYYY-MM-DD` is an ISO formated date. An optional end date may be passed with `--end-date YYY-MM-DD`, which otherwise defaults to the day defined by `--start-date`. Additionally,
+
+* The optional argument `--monthly` may be specified to fetch results with a monthy granularity, instead of daily.
+* The optional argument `--group GROUNAME` may be specified to fetch results for a specific top-level group, instead of all groups
+* The optional argument `--overall` may be specified, in order to fetch results at the report level, instead of per-group
 
 ## Environment variables
 
