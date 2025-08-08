@@ -40,7 +40,11 @@ pipeline {
                                     bandit -r .
 
                                     echo "Running mypy..."
-                                    mypy .
+                                    if find . -name "*.py" | grep -q .; then
+                                        mypy .
+                                    else
+                                        echo "No Python files found. Skipping mypy."
+                                    fi
                                 '''
                             }
                         }
