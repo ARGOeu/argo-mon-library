@@ -31,7 +31,7 @@ pipeline {
                                     export PATH=$HOME/.local/bin:$PATH
 
                                     echo "Running flake8..."
-                                    flake8 .
+                                    flake8 --max-line-length=120 .
 
                                     echo "Running isort..."
                                     isort --check-only .
