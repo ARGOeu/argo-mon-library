@@ -28,6 +28,8 @@ pipeline {
                                     cd ${WORKSPACE}/$PROJECT_DIR
                                     pip install flake8 isort bandit mypy
 
+                                    export PATH=$HOME/.local/bin:$PATH
+
                                     echo "Running flake8..."
                                     flake8 .
 
