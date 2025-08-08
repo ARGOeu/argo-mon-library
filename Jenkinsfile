@@ -60,10 +60,21 @@ pipeline {
                                     echo Found Python versions $ALLPYVERS
                                     pyenv local $ALLPYVERS
                                     export TOX_SKIP_ENV="py27.*|py36.*"
-                                    tox -p all
-                                    coverage xml --omit=*usr* --omit=*.tox*
-                                '''
-                                cobertura coberturaReportFile: '**/coverage.xml'
+                                    if [ -f tox.ini ] || [ -f pyproject.toml ] || [ -f setup.cfg ]; then
+                                        echo "Running tox..."
+                                        tox -p all
+                                        coverage xml --omit=*usr* --omit=*.tox*
+                                    else
+                                    echo "No tox config found. Skipping tox."
+                                    fi
+                                    '''
+                                    script {
+                                        if (fileExists('**/coverage.xml')) {
+                                            cobertura coberturaReportFile: '**/coverage.xml'
+                                        } else {
+                                            echo 'No coverage.xml found. Skipping cobertura report.'
+                                        }
+                                    }
                             }
                         }
                     }
