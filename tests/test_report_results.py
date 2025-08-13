@@ -38,7 +38,7 @@ class TestReportResults(unittest.TestCase):
         ):
             results = self.mon.reports[0].results
             self.assertIsNotNone(results)
-            self._validateReportResultsData(results)
+            self._validateReportResultsData(results.supergroups[0])
 
     def testGetReportResultsJSON(self):
         with HTTMock(

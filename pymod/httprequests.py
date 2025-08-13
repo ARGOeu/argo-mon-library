@@ -1,5 +1,4 @@
 import requests
-import sys
 import logging
 import socket
 import json
@@ -57,9 +56,7 @@ class HttpRequests(object):
         m = self.routes[route_name][0]
         decoded = None
         try:
-            # the get request based on requests.
-
-            # populate all requests with the Authorization: Bearer apikey header
+            # populate all requests with the X-Api-Key apikey header
             # if there is no defined headers dict in the reqkwargs, introduce it
             if "headers" not in reqkwargs:
                 headers = {
@@ -68,11 +65,18 @@ class HttpRequests(object):
                 }
                 reqkwargs["headers"] = headers
             else:
-                # if the there are already other headers defined, just append the x-api-key one
+                # if the there are already other headers defined, just append the X-Api-Key one
                 reqkwargs["headers"]["X-Api-Key"] = "{0}".format(self.apikey)
 
             reqmethod = getattr(requests, m)
-            logger.debug("doing a " + reqmethod.__name__ + " request on " + url + " with params " + str(params))
+            logger.debug(
+                "doing a "
+                + reqmethod.__name__
+                + " request on "
+                + url
+                + " with params "
+                + str(params)
+            )
             r = reqmethod(url, data=body, params=params, **reqkwargs)
 
             content = r.content

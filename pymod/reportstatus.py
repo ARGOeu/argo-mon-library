@@ -2,14 +2,18 @@ from .restresource import RestResourceList, RestResourceItem
 from datetime import datetime
 import json
 
-class ReportStatusGroupStatus(RestResourceItem):
-    timestamp = ""
-    value = ""
 
-    def __init__(self, parent, data = {}):
+class ReportStatusGroupStatus(RestResourceItem):
+    """Class to represent the status of a group in a status report"""
+    def __init__(self, parent, data={}):
         if data is not None:
-            self.timestamp = datetime.strptime(data.get("timestamp"), '%Y-%m-%dT%H:%M:%SZ')
+            self.timestamp = datetime.strptime(
+                str(data.get("timestamp")), "%Y-%m-%dT%H:%M:%SZ"
+            )
             self.value = data.get("value")
+        else:
+            self.timestamp = ""
+            self.value = ""
 
     def _fetchRoute(self):
         return ""
@@ -19,6 +23,7 @@ class ReportStatusGroupStatus(RestResourceItem):
 
 
 class ReportStatusGroupStatuses(RestResourceList):
+    """Collection class for group status entries in a status report"""
     def __init__(self, parent):
         super().__init__(parent, 1)
         self._fetch()
@@ -31,20 +36,21 @@ class ReportStatusGroupStatuses(RestResourceList):
 
 
 class ReportStatusGroupEndpoint(RestResourceItem):
-    hostname = ""
-    service = ""
-    id = ""
-    url = ""
-    statuses = []
-
-    def __init__(self, parent, data = {}):
+    """Class to represent a specific endpoint belonging to a group in a status report"""
+    def __init__(self, parent, data={}):
         super().__init__(parent, data)
         if data is not None:
-            self.name= data.get("hostname")
+            self.name = data.get("hostname")
             self.service = data.get("service")
             self.id = data.get("info").get("ID")
             self.url = data.get("info").get("URL")
             self.statuses = data.get("statuses")
+        else:
+            self.hostname = ""
+            self.service = ""
+            self.id = ""
+            self.url = ""
+            self.statuses = []
 
     @property
     def statuses(self):
@@ -62,6 +68,7 @@ class ReportStatusGroupEndpoint(RestResourceItem):
 
 
 class ReportStatusGroupEndpoints(RestResourceList):
+    """Collection class for group endpoints in a status report"""
     def __init__(self, parent):
         super().__init__(parent, 1)
         self._fetch()
@@ -80,16 +87,17 @@ class ReportStatusGroupEndpoints(RestResourceList):
 
 
 class ReportStatusGroup(RestResourceItem):
-    name = ""
-    type = ""
-
-    def __init__(self, parent, data = {}):
+    """Class to represent a specific group in a status report"""
+    def __init__(self, parent, data={}):
         super().__init__(parent, data)
         if data is not None:
-            self.name= data.get("name")
+            self.name = data.get("name")
             self.type = data.get("type")
             self.statuses = data.get("statuses")
             self.endpoints = data.get("endpoints")
+        else:
+            self.name = ""
+            self.type = ""
 
     @property
     def statuses(self):
@@ -115,6 +123,7 @@ class ReportStatusGroup(RestResourceItem):
 
 
 class ReportStatusGroups(RestResourceList):
+    """Collection class for groups in a status report"""
     def __init__(self, parent):
         super().__init__(parent, 1)
         self._fetch()
@@ -131,7 +140,9 @@ class ReportStatusGroups(RestResourceList):
                 return i
         return None
 
+
 class ReportStatus(RestResourceItem):
+    """Main class for status reports"""
     @property
     def groups(self) -> ReportStatusGroups:
         return ReportStatusGroups(self)
@@ -152,6 +163,10 @@ class ReportStatus(RestResourceItem):
 
     def _fetchParams(self) -> dict:
         return {
-            "start_time": (str(self._parent._parent._parent._period._startDate) + "Z").replace(" ", "T"),
-            "end_time": (str(self._parent._parent._parent._period._endDate) + "Z").replace(" ", "T")
+            "start_time": (
+                str(self._parent._parent._parent._period._startDate) + "Z"
+            ).replace(" ", "T"),
+            "end_time": (
+                str(self._parent._parent._parent._period._endDate) + "Z"
+            ).replace(" ", "T"),
         }

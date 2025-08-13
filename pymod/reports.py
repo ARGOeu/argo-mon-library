@@ -4,41 +4,46 @@ from .reportstatus import ReportStatus
 from datetime import datetime
 import json
 
-class ReportThresholds(object):
-    availability = 0
-    reliability = 0
-    uptime = 0.
-    unknown = 0.
-    downtime = 0.
 
-    def __init__(self, data = {}):
+class ReportThresholds(object):
+    """Report thresholds representation class"""
+    def __init__(self, data={}):
         if data is not None:
             self.availability = data.get("availability")
             self.reliability = data.get("reliability")
             self.uptime = data.get("uptime")
             self.unknown = data.get("unknown")
             self.downtime = data.get("downtime")
+        else:
+            self.availability = 0
+            self.reliability = 0
+            self.uptime = 0.0
+            self.unknown = 0.0
+            self.downtime = 0.0
 
     def __str__(self):
         return json.dumps(self.__dict__)
 
 
 class ReportProfile(object):
-    id = ""
-    type = ""
-    name = ""
-
-    def __init__(self, parent, data = {}):
+    """Report profile representation class"""
+    def __init__(self, parent, data={}):
         if data is not None:
             self.id = data.get("id")
             self.type = data.get("type")
             self.name = data.get("name")
+        else:
+            self.id = ""
+            self.type = ""
+            self.name = ""
 
     def __str__(self):
         return json.dumps(self.__dict__)
 
+
 class ReportProfiles(RestResourceList):
-    def __init__(self, parent, data = {}):
+    """Report profile collection class"""
+    def __init__(self, parent, data={}):
         super().__init__(parent, 1)
         self._fetch()
 
@@ -56,16 +61,17 @@ class ReportProfiles(RestResourceList):
 
 
 class ReportFilterTag(RestResourceItem):
-    name = ""
-    value = ""
-    context = ""
-
-    def __init__(self, parent, data = {}):
+    """Report filter tag representation class"""
+    def __init__(self, parent, data={}):
         super().__init__(parent, data)
         if data is not None:
             self.name = data.get("name")
             self.value = data.get("value")
             self.context = data.get("context")
+        else:
+            self.name = ""
+            self.value = ""
+            self.context = ""
 
     def _fetchRoute(self):
         return ""
@@ -75,7 +81,8 @@ class ReportFilterTag(RestResourceItem):
 
 
 class ReportFilterTags(RestResourceList):
-    def __init__(self, parent, data = {}):
+    """Report filter tag collection class"""
+    def __init__(self, parent, data={}):
         super().__init__(parent, 1)
         self._fetch()
 
@@ -87,10 +94,8 @@ class ReportFilterTags(RestResourceList):
 
 
 class ReportTopologySchemaGroup(RestResourceItem):
-    type = ""
-    group = None
-
-    def __init__(self, parent, data = {}):
+    """Report topology schema group representation class"""
+    def __init__(self, parent, data={}):
         super().__init__(parent, data)
         if data is not None:
             self.type = data.get("type")
@@ -98,6 +103,9 @@ class ReportTopologySchemaGroup(RestResourceItem):
                 self.group = ReportTopologySchemaGroup(self, data.get("group"))
             else:
                 self.group = None
+        else:
+            self.type = ""
+            self.group = None
 
     def _fetchRoute(self):
         return ""
@@ -105,13 +113,15 @@ class ReportTopologySchemaGroup(RestResourceItem):
     def _fetchArgs(self) -> list:
         return []
 
-class ReportTopologySchema(RestResourceItem):
-    group: ReportTopologySchemaGroup = None
 
-    def __init__(self, parent, data = {}):
+class ReportTopologySchema(RestResourceItem):
+    """Report topology schema entry representation class, beloning to a group"""
+    def __init__(self, parent, data={}):
         super().__init__(parent, data)
         if data is not None:
             self.group = ReportTopologySchemaGroup(self, data.get("group"))
+        else:
+            self.group = None
 
     def _fetchRoute(self):
         return ""
@@ -121,20 +131,23 @@ class ReportTopologySchema(RestResourceItem):
 
 
 class ReportComputations(object):
-    ar = False
-    status = False
-    trends = []
-
-    def __init__(self, data = {}):
+    """Report computations representation class"""
+    def __init__(self, data={}):
         if data is not None:
             self.ar = data.get("ar")
             self.status = data.get("status")
             self.trends = data.get("trends")
+        else:
+            self.ar = False
+            self.status = False
+            self.trends = []
 
     def __str__(self):
         return json.dumps(self.__dict__)
 
+
 class Report(RestResourceItem):
+    """Main class for monitoring reports"""
     @property
     def name(self) -> str:
         return self.info["name"]
@@ -145,11 +158,11 @@ class Report(RestResourceItem):
 
     @property
     def createdOn(self) -> datetime:
-        return datetime.strptime(self.info["created"], '%Y-%m-%d %H:%M:%S')
+        return datetime.strptime(self.info["created"], "%Y-%m-%d %H:%M:%S")
 
     @property
     def updatedOn(self) -> datetime:
-        return datetime.strptime(self.info["updated"], '%Y-%m-%d %H:%M:%S')
+        return datetime.strptime(self.info["updated"], "%Y-%m-%d %H:%M:%S")
 
     @property
     def computations(self) -> ReportComputations:
@@ -168,7 +181,7 @@ class Report(RestResourceItem):
         self._thresholds = value
 
     @property
-    def profiles(self) -> list:
+    def profiles(self) -> ReportProfiles:
         return ReportProfiles(self, self._profiles)
 
     @profiles.setter
@@ -176,7 +189,7 @@ class Report(RestResourceItem):
         self._profiles = value
 
     @property
-    def filter_tags(self) -> list:
+    def filter_tags(self) -> ReportFilterTags:
         return ReportFilterTags(self, self._filter_tags)
 
     @filter_tags.setter
@@ -205,7 +218,9 @@ class Report(RestResourceItem):
     def results(self) -> ReportResults:
         return ReportResults(self, {"__fetch__": self.name})
 
+
 class Reports(RestResourceList):
+    """Collection class for report lists"""
     def _fetchRoute(self):
         return "get_reports"
 

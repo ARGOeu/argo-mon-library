@@ -8,7 +8,17 @@ from .monmocks import ReportMocks
 class TestReports(unittest.TestCase):
     def setUp(self):
         self.mon = ArgoMonitoringService("localhost", "s3cr3t")
+        self.mon2 = ArgoMonitoringService("127.0.0.1", "S3CR3T")
         self.ReportMocks = ReportMocks()
+
+    def testInstances(self):
+        with HTTMock(
+            self.ReportMocks.list_reports_mock,
+            self.ReportMocks.list_reports_mock2
+        ):
+            reports = self.mon.reports
+            reports2 = self.mon2.reports
+            self.assertNotEqual(reports[0].name, reports2[0].name)
 
     def testReportListing(self):
         with HTTMock(self.ReportMocks.list_reports_mock):

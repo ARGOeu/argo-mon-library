@@ -77,14 +77,14 @@ where `REPORTNAME` is the name of a report, as listed in the 1st example, and `Y
 To get daily A/R results for all groups in a report, run
 
 ```bash
-python3 ./examples/get_endpoint_statuses.py --host api.devel.mon.argo.grnet.gr --api-key ~/mon.key -f --report REPORTNAME --start-date YYYY-MM-DD
+python3 ./examples/get_group_results.py --host api.devel.mon.argo.grnet.gr --api-key ~/mon.key -f --report REPORTNAME --start-date YYYY-MM-DD
 ```
 
 where `REPORTNAME` is the name of a report, as listed in the 1st example, and `YYYY-MM-DD` is an ISO formated date. An optional end date may be passed with `--end-date YYY-MM-DD`, which otherwise defaults to the day defined by `--start-date`. Additionally,
 
 * The optional argument `--monthly` may be specified to fetch results with a monthy granularity, instead of daily.
-* The optional argument `--group GROUNAME` may be specified to fetch results for a specific top-level group, instead of all groups
-* The optional argument `--overall` may be specified, in order to fetch results at the report level, instead of per-group
+* The optional argument `--supergroup SUPERGROUPNAME` may be specified, in order to fetch results for a specific top-level group (supergroup)
+* The optional argument `--group GROUNAME` may be specified in order to fetch results for specific group of each supergroup, instead of all groups
 
 ## Environment variables
 

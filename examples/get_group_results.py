@@ -32,15 +32,16 @@ if __name__ == "__main__":
         "--end-date", type=str, help="optional end date for report results, in YYYY-MM-DD format (default: same as start date)"
     )
     parser.add_argument(
+        "--supergroup",
+        type=str,
+        default="all",
+        help="optionally filter report results for a specific supergroup, by name (default: don't filter)",
+    )
+    parser.add_argument(
         "--group",
         type=str,
         default="all",
         help="optionally filter report results for a specific group, by name (default: don't filter)",
-    )
-    parser.add_argument(
-        "--overall",
-        help="optionally fetch overall results instead of grouped results ('group' argument will be ignored)",
-        action="store_true"
     )
     parser.add_argument(
         "--monthly",
@@ -62,21 +63,23 @@ if __name__ == "__main__":
     try:
         mon = ArgoMonitoringService(args.host, api_key)
         results = mon.period(datetime.strptime(args.start_date, "%Y-%m-%d"), datetime.strptime(args.end_date, "%Y-%m-%d"), granularity="monthly" if args.monthly else "daily").reports.byName(args.report).results
-        if args.overall:
-            for result in results.results:
-                print(results.name, result.date, "A/R: {0:.2f}/{1:.2f}".format(
+        if args.supergroup == "all":
+            supergroups = results.supergroups
+        else:
+            supergroups = [results.supergroups.byName(args.supergroup)]
+        for supergroup in supergroups:
+            for result in supergroup.results:
+                print(supergroup.type + ":", supergroup.name, result.date, "A/R: {0:.2f}/{1:.2f}".format(
                     float(result.availability),
                     float(result.reliability)
                 ))
-        else:
             if args.group == "all":
-                groups = results.groups
+                groups = supergroup.groups
             else:
-                #groups = [results.groups[args.group]]
-                groups = [results.groups[args.group]]
+                groups = [supergroup.groups.byName(args.group)]
             for group in groups:
                 for result in group.results:
-                    print(group.name, result.date, "A/R: {0:.2f}/{1:.2f}, Uptime: {2}, Downtime: {3}, Unknown: {4}".format(
+                    print('  ', group.type + ":", group.name, result.date, "A/R: {0:.2f}/{1:.2f}, Uptime: {2}, Downtime: {3}, Unknown: {4}".format(
                         float(result.availability),
                         float(result.reliability),
                         result.uptime,

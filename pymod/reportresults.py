@@ -1,15 +1,13 @@
 from .restresource import RestResourceList, RestResourceItem
 from datetime import datetime
-import json
+
 
 class ReportResultsGroup(RestResourceItem):
-    name = ""
-    type = ""
-
-    def __init__(self, parent, data = {}):
+    """Class to represent group data in report results"""
+    def __init__(self, parent, data={}):
         super().__init__(parent, data)
         if data is not None:
-            self.name= data.get("name")
+            self.name = data.get("name")
             self.type = data.get("type")
             self.results = data.get("results")
 
@@ -28,16 +26,11 @@ class ReportResultsGroup(RestResourceItem):
         return []
 
 
-class ReportResultsGroups(RestResourceList):
+class ReportResultsGroupsBase(RestResourceList):
+    """Base class used by groups and supergroups in report results"""
     def __init__(self, parent):
         super().__init__(parent, 1)
         self._fetch()
-
-    def _fetch(self):
-        for i in self._parent._groups:
-            self.update({i["name"]: ReportResultsGroup(self, i)})
-            self._pageCount = 1
-            self._currentPage = 1
 
     def byName(self, name: str):
         for i in self:
@@ -46,21 +39,44 @@ class ReportResultsGroups(RestResourceList):
         return None
 
 
-class ReportResultsResult(RestResourceItem):
-    date = ""
-    availability = ""
-    reliability = ""
-    unknown = ""
-    uptime = ""
-    downtime = ""
+class ReportResultsGroups(ReportResultsGroupsBase):
+    """Class to represent a collection of groups in report results"""
+    def _fetch(self):
+        for i in self._parent._groups:
+            self.update({i["name"]: ReportResultsGroup(self, i)})
+        self._pageCount = 1
+        self._currentPage = 1
 
-    def __init__(self, parent, data = {}):
+
+class ReportResultsSupergroup(ReportResultsGroup):
+    """Class to represent supergroups data in report results"""
+    @property
+    def groups(self) -> ReportResultsGroups:
+        return ReportResultsGroups(self)
+
+    @groups.setter
+    def groups(self, value):
+        self._groups = value
+
+
+class ReportResultsSupergroups(ReportResultsGroupsBase):
+    """Class to represent a collection of supergroups in report results"""
+    def _fetch(self):
+        for i in self._parent.results:
+            self.update({i["name"]: ReportResultsSupergroup(self, i)})
+        self._pageCount = 1
+        self._currentPage = 1
+
+
+class ReportResultsResult(RestResourceItem):
+    """Class to represent a specific report result entry, pertaining to a (super)group far a specific time span"""
+    def __init__(self, parent, data={}):
         super().__init__(parent, data)
         if data is not None:
             try:
-                self.date = datetime.strptime(data.get("date"), '%Y-%m-%d')
+                self.date = datetime.strptime(str(data.get("date")), "%Y-%m-%d")
             except ValueError:
-                self.date = datetime.strptime(data.get("date"), '%Y-%m')
+                self.date = datetime.strptime(str(data.get("date")), "%Y-%m")
             self.availability = data.get("availability")
             self.reliability = data.get("reliability")
             self.unknown = data.get("unknown")
@@ -75,6 +91,7 @@ class ReportResultsResult(RestResourceItem):
 
 
 class ReportResultsResults(RestResourceList):
+    """Class to represent a collection of report result entries"""
     def __init__(self, parent):
         super().__init__(parent, 1)
         self._fetch()
@@ -87,42 +104,14 @@ class ReportResultsResults(RestResourceList):
 
 
 class ReportResults(RestResourceItem):
+    """Main class to represent report results"""
     @property
     def dataRoot(self):
-        return "results"
+        return None
 
     @property
-    def groups(self) -> ReportResultsGroups:
-        """Parent object to results of a specific group"""
-        return ReportResultsGroups(self)
-
-    @groups.setter
-    def groups(self, value):
-        self._groups = value
-
-    @property
-    def toplevel(self) -> ReportResultsResults:
-        """
-        Alternative property for top-level results.
-        Equivalent to ArgoMonitoringService::results::results
-        """
-        return self.results
-
-    def byGroup(self, group):
-        """
-        Shortcut to results for a specific group
-        Equivalent to ArgoMonitoringService::results::groups[…]::results
-        """
-        return self.groups[group].results
-
-    @property
-    def results(self) -> ReportResultsResults:
-        """Get top-level results"""
-        return ReportResultsResults(self)
-
-    @results.setter
-    def results(self, value):
-        self._results = value
+    def supergroups(self) -> ReportResultsSupergroups:
+        return ReportResultsSupergroups(self)
 
     def _fetchRoute(self):
         return "get_report_results"
@@ -132,7 +121,11 @@ class ReportResults(RestResourceItem):
 
     def _fetchParams(self) -> dict:
         return {
-            "start_time": (str(self._parent._parent._parent._period._startDate) + "Z").replace(" ", "T"),
-            "end_time": (str(self._parent._parent._parent._period._endDate) + "Z").replace(" ", "T"),
-            "granularity": self._parent._parent._parent._period._granularity
+            "start_time": (
+                str(self._parent._parent._parent._period._startDate) + "Z"
+            ).replace(" ", "T"),
+            "end_time": (
+                str(self._parent._parent._parent._period._endDate) + "Z"
+            ).replace(" ", "T"),
+            "granularity": self._parent._parent._parent._period._granularity,
         }

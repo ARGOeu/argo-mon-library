@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import json
 import abc
-from time import sleep
+
 import logging
 from typing import Union
 
@@ -41,10 +41,9 @@ class RestResource(abc.ABC):
         """Method to provide values for querystring params on the GET REST route"""
         return {}
 
+
 class RestResourceItem(RestResource):
     """Base class for REST API responses representing a single item"""
-
-    id = None
 
     def __init__(self, parent, data: dict):
         """
@@ -54,6 +53,7 @@ class RestResourceItem(RestResource):
         """
         logger.debug("Initing RestResourceItem object " + str(type(self)))
         self._parent = parent
+        self.id = None
         if len(data) == 1 and data.get("__fetch__") is not None:
             self.id = data["__fetch__"]
             if self.dataRoot is None:
@@ -131,17 +131,15 @@ class RestResourceList(OrderedDict, RestResource):
     re-fetching individual items.
     """
 
-    _pageSize = 10
-    _pageCount = 1
-    _currentPage = 0
-    _cache = OrderedDict()
-
     def __init__(self, parent, pageSize=10):
         logger.debug("Initing RestResourceList object " + str(type(self)))
         super(OrderedDict, self).__init__()
         super(RestResource, self).__init__()
         self._parent = parent
         self._pageSize = pageSize
+        self._pageCount = 1
+        self._currentPage = 0
+        self._cache = OrderedDict()
 
     def refresh(self):
         """Clear the internal dict, the cache dict, and reset paging"""
@@ -180,7 +178,6 @@ class RestResourceList(OrderedDict, RestResource):
     @abc.abstractmethod
     def _createChild(self, data: dict):
         """Abstract method to be implemented by subclasses, to create the appropriate RestResourceItem instance"""
-        #return RestResourceItem(self, {})
         raise Exception("Operation not supported or not implemented")
 
     def _fetch(self):
@@ -194,7 +191,7 @@ class RestResourceList(OrderedDict, RestResource):
                 self.endpoint, *self._fetchArgs()
             ),
             self._fetchRoute(),
-#            params={"page": self._currentPage + 1},
+            # params={"page": self._currentPage + 1},
         )
         # hardcode pageCount to 1, as the API does not support paging
         self._pageCount = 1
