@@ -1,16 +1,13 @@
 import logging
 import os
 
-try:
-    from logging import NullHandler
-except ImportError:
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
-
+from .argomonitoringservice import ArgoMonitoringService
+from .exceptions import (MonConnectionException, MonException,
+                         MonServiceException, MonTimeoutException)
+from .reports import Report, ReportResults, ReportStatus
 
 logger = logging.getLogger(__name__)
-if os.getenv("DEBUG") is not None and os.getenv("DEBUG").lower() in [
+if os.getenv("DEBUG") is not None and str(os.getenv("DEBUG")).lower() in [
     "1",
     "t",
     "true",
@@ -28,18 +25,15 @@ if os.getenv("DEBUG") is not None and os.getenv("DEBUG").lower() in [
     logger.addHandler(ch)
     logger.setLevel(logging.DEBUG)
 else:
-    logger.addHandler(NullHandler())
+    logger.addHandler(logging.NullHandler())
 
-from .exceptions import (
-    MonException,
-    MonServiceException,
-    MonTimeoutException,
-    MonConnectionException,
-)
-from .argomonitoringservice import (
-    ArgoMonitoringService,
-    Reports,
-    Report,
-    ReportStatus,
-    ReportResults
-)
+__all__ = [
+    "ArgoMonitoringService",
+    "MonConnectionException",
+    "MonException",
+    "MonServiceException",
+    "MonTimeoutException",
+    "Report",
+    "ReportResults",
+    "ReportStatus"
+]

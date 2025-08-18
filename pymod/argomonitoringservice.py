@@ -1,13 +1,14 @@
-from .httprequests import HttpRequests
-from .reports import Reports, Report, ReportStatus, ReportResults
-from .exceptions import MonException
-from typing import Optional, Union
 from datetime import datetime
+from typing import Optional, Union
+
+from .exceptions import MonException
+from .httprequests import HttpRequests
+from .reports import Reports
 
 try:
-    from typing import Self, List
+    from typing import Self
 except ImportError:
-    from typing_extensions import Self, List
+    from typing_extensions import Self
 
 
 class Period(object):
@@ -18,37 +19,45 @@ class Period(object):
 
     def __init__(
         self,
-        startDate: Union[datetime, str],
-        endDate: Union[datetime, str, None] = None,
+        start_date: Union[datetime, str],
+        end_date: Union[datetime, str, None] = None,
         granularity: str = "daily",
     ):
-        if type(startDate) is str:
-            if startDate == "now":
-                self._startDate = datetime.now()
-            elif startDate == "today":
-                self._startDate = datetime.now().replace(
+        self._start_date: datetime
+        self._end_date: datetime
+        if type(start_date) is str:
+            if start_date == "now":
+                self._start_date = datetime.now()
+            elif start_date == "today":
+                self._start_date = datetime.now().replace(
                     hour=0, minute=0, second=0, microsecond=0
                 )
             else:
-                self._startDate = datetime.strptime(startDate, "%Y-%m-%dT%H:%M:%SZ")
+                self._start_date = datetime.strptime(
+                    start_date, "%Y-%m-%dT%H:%M:%SZ"
+                )
+        elif type(start_date) is datetime:
+            self._start_date = start_date
         else:
-            self._startDate = startDate
-        if endDate is None:
-            self._endDate = self._startDate.replace(
+            raise ValueError("Invalid type for parameter 'start_date'")
+        if end_date is None:
+            self._end_date = self._start_date.replace(
                 hour=23, minute=59, second=59, microsecond=0
             )
         else:
-            if type(endDate) is str:
-                if endDate == "now":
-                    self._endDate = datetime.now()
-                elif endDate == "today":
-                    self._endDate = datetime.now().replace(
+            if type(end_date) is str:
+                if end_date == "now":
+                    self._end_date = datetime.now()
+                elif end_date == "today":
+                    self._end_date = datetime.now().replace(
                         hour=0, minute=0, second=0, microsecond=0
                     )
                 else:
-                    self._endDate = datetime.strptime(endDate, "%Y-%m-%dT%H:%M:%SZ")
+                    self._end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%SZ")
+            elif type(end_date) is datetime:
+                self._end_date = end_date
             else:
-                self._endDate = endDate
+                raise ValueError("Invalid type for parameter 'end_date'")
         if granularity in ["daily", "monthly", "custom"]:
             self._granularity = granularity
         else:
@@ -85,16 +94,16 @@ class ArgoMonitoringService(object):
 
     def period(
         self,
-        startDate: Union[datetime, str],
-        endDate: Union[datetime, str, None] = None,
+        start_date: Union[datetime, str],
+        end_date: Union[datetime, str, None] = None,
         granularity="daily",
     ) -> Self:
         """
         Define a period for requests that need a start and end date. After a call to this method, subsequent calls
-        will use the same period, until another call changes it. Omitting the endDate parameter will default to the
-        end of the same day as the startDate parameter (H:M:S=23:59:59).
+        will use the same period, until another call changes it. Omitting the end_date parameter will default to the
+        end of the same day as the start_date parameter (H:M:S=23:59:59).
 
-        Both startDate and endDate may be either python datetime objects, or Zulu-formatted date-time strings, i.e.:
+        Both start_date and end_date may be either python datetime objects, or Zulu-formatted date-time strings, i.e.:
             1979-01-01T00:00:00Z
 
         Other datetime formats when passing strings are not supported, with the exception of the literals 'now' and
@@ -103,5 +112,5 @@ class ArgoMonitoringService(object):
         The optional granularity parameter may take the values of 'daily' (default) or 'monthly' and will be used
         to group result values per the respected time frame.
         """
-        self._period = Period(startDate, endDate, granularity)
+        self._period = Period(start_date, end_date, granularity)
         return self

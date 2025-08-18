@@ -1,12 +1,12 @@
 class MonException(Exception):
-    """Base exception class for all Argo Monounting service related errors"""
+    """Base exception class for all Argo Monitoring service related errors"""
 
     def __init__(self, *args, **kwargs):
         super(MonException, self).__init__(*args, **kwargs)
 
 
 class MonServiceException(MonException):
-    """Exception for Argo Monounting Service API errors"""
+    """Exception for Argo Monitoring Service API errors"""
 
     def __init__(self, json, request):
         errord = dict()

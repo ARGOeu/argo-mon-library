@@ -1,5 +1,6 @@
-from .restresource import RestResourceList, RestResourceItem
 from datetime import datetime
+
+from .restresource import RestResourceItem, RestResourceList
 
 
 class ReportResultsGroup(RestResourceItem):
@@ -19,10 +20,10 @@ class ReportResultsGroup(RestResourceItem):
     def results(self, value):
         self._results = value
 
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return ""
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return []
 
 
@@ -32,7 +33,13 @@ class ReportResultsGroupsBase(RestResourceList):
         super().__init__(parent, 1)
         self._fetch()
 
-    def byName(self, name: str):
+    def _fetch_route(self):
+        return ""
+
+    def _fetch_args(self) -> list:
+        return []
+
+    def by_name(self, name: str):
         for i in self:
             if i.name == name:
                 return i
@@ -83,10 +90,10 @@ class ReportResultsResult(RestResourceItem):
             self.uptime = data.get("uptime")
             self.downtime = data.get("downtime")
 
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return ""
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return []
 
 
@@ -106,26 +113,26 @@ class ReportResultsResults(RestResourceList):
 class ReportResults(RestResourceItem):
     """Main class to represent report results"""
     @property
-    def dataRoot(self):
+    def data_root(self):
         return None
 
     @property
     def supergroups(self) -> ReportResultsSupergroups:
         return ReportResultsSupergroups(self)
 
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return "get_report_results"
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return [self.id]
 
-    def _fetchParams(self) -> dict:
+    def _fetch_params(self) -> dict:
         return {
             "start_time": (
-                str(self._parent._parent._parent._period._startDate) + "Z"
+                str(self._parent._parent._parent._period._start_date) + "Z"
             ).replace(" ", "T"),
             "end_time": (
-                str(self._parent._parent._parent._period._endDate) + "Z"
+                str(self._parent._parent._parent._period._end_date) + "Z"
             ).replace(" ", "T"),
             "granularity": self._parent._parent._parent._period._granularity,
         }

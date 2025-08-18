@@ -1,9 +1,12 @@
-import unittest
-from httmock import HTTMock
-from pymod import ArgoMonitoringService, Reports, Report, ReportStatus
-from datetime import datetime
 import json
+import unittest
+
+from httmock import HTTMock
+
+from pymod import ArgoMonitoringService, ReportStatus
+
 from .monmocks import ReportMocks
+
 
 class TestReportStatus(unittest.TestCase):
     def setUp(self):
@@ -52,8 +55,8 @@ class TestReportStatus(unittest.TestCase):
             jsons = str(status)
             try:
                 j = json.loads(jsons)
-            except:
-                pass
+            except json.decoder.JSONDecodeError:
+                self.fail("Invalid JSON representation")
             self.assertIsNotNone(j)
             self.assertTrue('"name": "ARGO_MON"' in jsons)
             self.assertTrue('"type": "SERVICEGROUPS"' in jsons)
@@ -64,4 +67,3 @@ class TestReportStatus(unittest.TestCase):
             self.assertTrue('"service": "www.example.com-example.api"' in jsons)
             self.assertTrue('"ID": "EXAMPLE01"' in jsons)
             self.assertTrue('"URL": "https://www.example.com/api/action?foo=bar"' in jsons)
-

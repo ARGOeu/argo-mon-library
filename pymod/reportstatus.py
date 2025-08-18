@@ -1,6 +1,6 @@
-from .restresource import RestResourceList, RestResourceItem
 from datetime import datetime
-import json
+
+from .restresource import RestResourceItem, RestResourceList
 
 
 class ReportStatusGroupStatus(RestResourceItem):
@@ -15,10 +15,10 @@ class ReportStatusGroupStatus(RestResourceItem):
             self.timestamp = ""
             self.value = ""
 
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return ""
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return []
 
 
@@ -60,10 +60,10 @@ class ReportStatusGroupEndpoint(RestResourceItem):
     def statuses(self, value):
         self._statuses = value
 
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return ""
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return []
 
 
@@ -79,7 +79,7 @@ class ReportStatusGroupEndpoints(RestResourceList):
             self._pageCount = 1
             self._currentPage = 1
 
-    def byName(self, name: str):
+    def by_name(self, name: str):
         for i in self:
             if i.name == name:
                 return i
@@ -115,10 +115,10 @@ class ReportStatusGroup(RestResourceItem):
     def endpoints(self, value):
         self._endpoints = value
 
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return ""
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return []
 
 
@@ -134,7 +134,13 @@ class ReportStatusGroups(RestResourceList):
             self._pageCount = 1
             self._currentPage = 1
 
-    def byName(self, name: str):
+    def _fetch_route(self):
+        return ""
+
+    def _fetch_args(self) -> list:
+        return []
+
+    def by_name(self, name: str):
         for i in self:
             if i.name == name:
                 return i
@@ -152,21 +158,21 @@ class ReportStatus(RestResourceItem):
         self._groups = value
 
     @property
-    def dataRoot(self):
+    def data_root(self):
         return None
 
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return "get_report_status"
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return [self.id]
 
-    def _fetchParams(self) -> dict:
+    def _fetch_params(self) -> dict:
         return {
             "start_time": (
-                str(self._parent._parent._parent._period._startDate) + "Z"
+                str(self._parent._parent._parent._period._start_date) + "Z"
             ).replace(" ", "T"),
             "end_time": (
-                str(self._parent._parent._parent._period._endDate) + "Z"
+                str(self._parent._parent._parent._period._end_date) + "Z"
             ).replace(" ", "T"),
         }

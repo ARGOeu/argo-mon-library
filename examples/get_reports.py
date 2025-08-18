@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-
-from argparse import ArgumentParser
-from argo_mon_library import ArgoMonitoringService
 import sys
-from datetime import datetime
+from argparse import ArgumentParser
+
+from argo_mon_library import ArgoMonitoringService
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Simple Argo Monitoring metric fetch example")
@@ -37,7 +36,7 @@ if __name__ == "__main__":
     i = 0
     try:
         for m in mon.reports:
-            i+=1
+            i += 1
             print("Report #{0}".format(i))
             print("  ID: {0}".format(m.id))
             print("  Name: {0}".format(m.name))

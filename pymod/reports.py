@@ -1,8 +1,9 @@
-from .restresource import RestResourceList, RestResourceItem
+import json
+from datetime import datetime
+
 from .reportresults import ReportResults
 from .reportstatus import ReportStatus
-from datetime import datetime
-import json
+from .restresource import RestResourceItem, RestResourceList
 
 
 class ReportThresholds(object):
@@ -53,7 +54,13 @@ class ReportProfiles(RestResourceList):
             self._pageCount = 1
             self._currentPage = 1
 
-    def byName(self, name: str):
+    def _fetch_route(self):
+        return ""
+
+    def _fetch_args(self) -> list:
+        return []
+
+    def by_name(self, name: str):
         for i in self:
             if i.name == name:
                 return i
@@ -73,10 +80,10 @@ class ReportFilterTag(RestResourceItem):
             self.value = ""
             self.context = ""
 
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return ""
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return []
 
 
@@ -91,6 +98,12 @@ class ReportFilterTags(RestResourceList):
             self.update({i["name"]: ReportFilterTag(self, i)})
             self._pageCount = 1
             self._currentPage = 1
+
+    def _fetch_route(self):
+        return ""
+
+    def _fetch_args(self) -> list:
+        return []
 
 
 class ReportTopologySchemaGroup(RestResourceItem):
@@ -107,10 +120,10 @@ class ReportTopologySchemaGroup(RestResourceItem):
             self.type = ""
             self.group = None
 
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return ""
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return []
 
 
@@ -123,10 +136,10 @@ class ReportTopologySchema(RestResourceItem):
         else:
             self.group = None
 
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return ""
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return []
 
 
@@ -148,21 +161,46 @@ class ReportComputations(object):
 
 class Report(RestResourceItem):
     """Main class for monitoring reports"""
+
+    @property
+    def info(self):
+        return self._info
+
+    @info.setter
+    def info(self, value):
+        self._info = value
+
     @property
     def name(self) -> str:
-        return self.info["name"]
+        return self._info["name"]
 
     @property
     def description(self) -> str:
-        return self.info["description"]
+        return self._info["description"]
 
     @property
-    def createdOn(self) -> datetime:
-        return datetime.strptime(self.info["created"], "%Y-%m-%d %H:%M:%S")
+    def tenant(self):
+        return self._tenant
+
+    @tenant.setter
+    def tenant(self, value):
+        self._tenant = value
 
     @property
-    def updatedOn(self) -> datetime:
-        return datetime.strptime(self.info["updated"], "%Y-%m-%d %H:%M:%S")
+    def disabled(self):
+        return self._disabled
+
+    @disabled.setter
+    def disabled(self, value):
+        self._disabled = value
+
+    @property
+    def created_on(self) -> datetime:
+        return datetime.strptime(self._info["created"], "%Y-%m-%d %H:%M:%S")
+
+    @property
+    def updated_on(self) -> datetime:
+        return datetime.strptime(self._info["updated"], "%Y-%m-%d %H:%M:%S")
 
     @property
     def computations(self) -> ReportComputations:
@@ -204,10 +242,10 @@ class Report(RestResourceItem):
     def topology_schema(self, value):
         self._topology_schema = value
 
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return "get_report"
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return [self.id]
 
     @property
@@ -221,16 +259,16 @@ class Report(RestResourceItem):
 
 class Reports(RestResourceList):
     """Collection class for report lists"""
-    def _fetchRoute(self):
+    def _fetch_route(self):
         return "get_reports"
 
-    def _fetchArgs(self) -> list:
+    def _fetch_args(self) -> list:
         return []
 
-    def _createChild(self, data):
+    def _create_child(self, data):
         return Report(self, data)
 
-    def byName(self, name: str):
+    def by_name(self, name: str):
         for i in self:
             if i.name == name:
                 return i

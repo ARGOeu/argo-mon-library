@@ -1,9 +1,11 @@
-import requests
+import json
 import logging
 import socket
-import json
 
-from .exceptions import MonConnectionException, MonServiceException, MonTimeoutException
+import requests
+
+from .exceptions import (MonConnectionException, MonServiceException,
+                         MonTimeoutException)
 
 logger = logging.getLogger(__name__)
 

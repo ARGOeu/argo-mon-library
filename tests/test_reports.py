@@ -1,9 +1,13 @@
-import unittest
-from httmock import HTTMock
-from pymod import ArgoMonitoringService, Reports, Report
-from datetime import datetime
 import json
+import unittest
+from datetime import datetime
+
+from httmock import HTTMock
+
+from pymod import ArgoMonitoringService, Report
+
 from .monmocks import ReportMocks
+
 
 class TestReports(unittest.TestCase):
     def setUp(self):
@@ -13,8 +17,7 @@ class TestReports(unittest.TestCase):
 
     def testInstances(self):
         with HTTMock(
-            self.ReportMocks.list_reports_mock,
-            self.ReportMocks.list_reports_mock2
+            self.ReportMocks.list_reports_mock, self.ReportMocks.list_reports_mock2
         ):
             reports = self.mon.reports
             reports2 = self.mon2.reports
@@ -31,8 +34,14 @@ class TestReports(unittest.TestCase):
         self.assertEqual(report.disabled, False)
         self.assertEqual(report.name, "REPORT01")
         self.assertEqual(report.description, "REPORT01 A/R report")
-        self.assertEqual(report.createdOn, datetime.strptime("2025-03-06 12:53:27", "%Y-%m-%d %H:%M:%S"))
-        self.assertEqual(report.updatedOn, datetime.strptime("2025-03-06 12:53:27", "%Y-%m-%d %H:%M:%S"))
+        self.assertEqual(
+            report.created_on,
+            datetime.strptime("2025-03-06 12:53:27", "%Y-%m-%d %H:%M:%S"),
+        )
+        self.assertEqual(
+            report.updated_on,
+            datetime.strptime("2025-03-06 12:53:27", "%Y-%m-%d %H:%M:%S"),
+        )
         self.assertEqual(report.computations.ar, True)
         self.assertEqual(report.computations.status, True)
         self.assertIn("flapping", report.computations.trends)
@@ -70,7 +79,7 @@ class TestReports(unittest.TestCase):
     def testGetReportByName(self):
         with HTTMock(self.ReportMocks.list_reports_mock):
             reports = self.mon.reports
-            report = reports.byName("REPORT01")
+            report = reports.by_name("REPORT01")
             self.assertIsNotNone(report)
             self._validateReportData(report)
 
@@ -87,8 +96,8 @@ class TestReports(unittest.TestCase):
             jsons = str(report)
             try:
                 j = json.loads(jsons)
-            except:
-                pass
+            except json.decoder.JSONDecodeError:
+                self.fail("Invalid JSON representation")
             self.assertIsNotNone(j)
             self.assertTrue('"id": "efd48668-e24a-4a2c-a53f-3f388664b691"' in jsons)
             self.assertTrue('"tenant": "TENANT01"' in jsons)
@@ -97,9 +106,27 @@ class TestReports(unittest.TestCase):
             self.assertTrue('"description": "REPORT01 A/R report"' in jsons)
             self.assertTrue('"created": "2025-03-06 12:53:27"' in jsons)
             self.assertTrue('"updated": "2025-03-06 12:53:27"' in jsons)
-            self.assertTrue('"computations": {"ar": true, "status": true, "trends": ["flapping", "status", "tags"]}' in jsons)
-            self.assertTrue('"thresholds": {"availability": 80, "reliability": 90, "uptime": 0.8, "unknown": 0.1, "downtime": 0.1}' in jsons)
-            self.assertTrue('"topology_schema": {"group": {"type": "PROJECT", "group": {"type": "SERVICEGROUPS"}}}' in jsons)
-            self.assertTrue('"profiles": [{"id": "5c3218ea-3f67-4d4c-b3ce-f650b8ed8e68", "name": "ARGO_MON", "type": "metric"}, {"id": "ede2a9f7-e754-47fa-8e76-449e3925fbd4", "name": "core", "type": "aggregation"}, {"id": "be1fbf37-77f3-4a9e-b268-a6a9a0830ef5", "name": "ops", "type": "operations"}]' in jsons)
-            self.assertTrue('"filter_tags": [{"name": "FT1", "value": "val", "context": "cntx"}]}' in jsons)
-
+            self.assertTrue(
+                '"computations": {"ar": true, "status": true, "trends": ["flapping", "status", "tags"]}'
+                in jsons
+            )
+            self.assertTrue(
+                '"thresholds": {"availability": 80, "reliability": 90, "uptime": 0.8, "unknown": 0.1, "downtime": 0.1}'
+                in jsons
+            )
+            self.assertTrue(
+                '"topology_schema": {"group": {"type": "PROJECT", "group": {"type": "SERVICEGROUPS"}}}'
+                in jsons
+            )
+            self.assertTrue(
+                (
+                    '"profiles": [{"id": "5c3218ea-3f67-4d4c-b3ce-f650b8ed8e68", "name": "ARGO_MON", "type": "metric"},'
+                    ' {"id": "ede2a9f7-e754-47fa-8e76-449e3925fbd4", "name": "core", "type": "aggregation"},'
+                    ' {"id": "be1fbf37-77f3-4a9e-b268-a6a9a0830ef5", "name": "ops", "type": "operations"}]'
+                )
+                in jsons
+            )
+            self.assertTrue(
+                '"filter_tags": [{"name": "FT1", "value": "val", "context": "cntx"}]}'
+                in jsons
+            )
