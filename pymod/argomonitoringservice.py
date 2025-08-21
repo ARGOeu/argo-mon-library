@@ -5,9 +5,11 @@ from .exceptions import MonException
 from .httprequests import HttpRequests
 from .reports import Reports
 
-try:
+import sys
+
+if sys.version_info >= (3, 11):
     from typing import Self
-except ImportError:
+else:
     from typing_extensions import Self
 
 
