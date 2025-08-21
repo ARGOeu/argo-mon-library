@@ -1,16 +1,15 @@
+import sys
 from datetime import datetime
 from typing import Optional, Union
-
-from .exceptions import MonException
-from .httprequests import HttpRequests
-from .reports import Reports
-
-import sys
 
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
     from typing_extensions import Self
+
+from .exceptions import MonException
+from .httprequests import HttpRequests
+from .reports import Reports
 
 
 class Period(object):
