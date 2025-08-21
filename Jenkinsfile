@@ -26,6 +26,9 @@ pipeline {
                                 echo 'Executing lint checks'
                                 sh '''
                                     cd ${WORKSPACE}/$PROJECT_DIR
+                                    rm -f .python-version &>/dev/null
+                                    rm -rf .coverage* .tox/ coverage.xml &> /dev/null
+                                    
                                     pip install flake8 isort bandit mypy
 
                                     export PATH=$HOME/.local/bin:$PATH
