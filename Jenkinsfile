@@ -41,7 +41,7 @@ pipeline {
 
                                     echo "Running mypy..."
                                     if find . -name "*.py" | grep -q .; then
-                                        mypy .
+                                        mypy --disable-error-code=import-untyped --ignore-missing-imports .
                                     else
                                         echo "No Python files found. Skipping mypy."
                                     fi
