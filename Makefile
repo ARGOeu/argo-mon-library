@@ -25,6 +25,8 @@ rpm: dist
 	  --define "dist $(DIST)"
 
 dist:
+    @echo "PKGVERSION: '$(PKGVERSION)'"
+	@echo "TARBALL: '$(TARBALL)'"
 	rm -rf dist
 	python3 setup.py sdist
 	mv -f dist/$(TARBALL) .
