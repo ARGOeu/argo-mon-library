@@ -77,6 +77,16 @@ pipeline {
                                     }
                             }
                         }
+                        stage ('Build Rocky 9') {
+                            steps {
+                                echo 'Building Rocky 9 RPM...'
+                                withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'jenkins-rpm-repo', usernameVariable: 'REPOUSER', \
+                                                                            keyFileVariable: 'REPOKEY')]) {
+                                    sh "/home/jenkins/build-rpm.sh -w ${WORKSPACE} -b ${BRANCH_NAME} -d rocky9 -p ${PROJECT_DIR} -s ${REPOKEY}"
+                                }
+                                archiveArtifacts artifacts: '**/*.rpm', fingerprint: true
+                            }
+                        }
                     }
                 }
             }
