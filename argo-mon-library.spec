@@ -71,7 +71,7 @@ python%{python3_pkgversion_312} setup.py install --root=%{buildroot} --record=IN
 %package -n python%{python3_pkgversion}-%{name}
 Summary: %{sum}
 BuildRequires: python3-devel    python3-setuptools
-Requires:      python(abi) = 3.9    python3-requests
+Requires:      python(abi) = 3.9    python3-requests    python3-typing-extensions
 AutoReq: no
 %description -n python%{python3_pkgversion}-%{name}
 %{desc}
