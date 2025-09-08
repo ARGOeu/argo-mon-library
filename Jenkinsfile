@@ -108,9 +108,11 @@ pipeline {
             }
             steps {
                 echo 'Build python package and upload'
-                withCredentials(bindings: [usernamePassword(credentialsId: 'pypi-token', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                withCredentials(bindings: [usernamePassword(credentialsId: 'pypi-argoeu', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh '''
                         cd ${WORKSPACE}/$PROJECT_DIR
+                        pipenv install twine --dev
+                        pipenv install 
                         pipenv install --dev
                         pipenv run python setup.py sdist bdist_wheel
                         pipenv run python -m twine upload -u $USERNAME -p $PASSWORD dist/*
