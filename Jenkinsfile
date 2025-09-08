@@ -98,9 +98,9 @@ pipeline {
             }
         }
         stage ('Upload to PyPI'){
-            // when {
-            //     branch 'main'
-            // }
+            when {
+                branch 'main'
+            }
             agent {
                 docker {
                     image 'argo.registry:5000/python3'
