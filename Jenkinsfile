@@ -99,7 +99,7 @@ pipeline {
         }
         stage ('Upload to PyPI'){
             when {
-                branch 'master'
+                branch 'main'
             }
             agent {
                 docker {
