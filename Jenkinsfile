@@ -103,7 +103,8 @@ pipeline {
             }
             agent {
                 docker {
-                    image 'argo.registry:5000/python3'
+                    image 'argo.registry:5000/epel-9-acc'
+                    args '-u jenkins:jenkins'
                 }
             }
             steps {
@@ -111,11 +112,13 @@ pipeline {
                 withCredentials(bindings: [usernamePassword(credentialsId: 'pypi-argoeu', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh '''
                         cd ${WORKSPACE}/$PROJECT_DIR
-                        pipenv install twine --dev
-                        pipenv install 
-                        pipenv install --dev
-                        pipenv run python setup.py sdist bdist_wheel
-                        pipenv run python -m twine upload -u $USERNAME -p $PASSWORD dist/*
+                        pip install pipenv
+                        /home/jenkins/.local/bin/pipenv install twine --dev
+                        /home/jenkins/.local/bin/pipenv install
+                        /home/jenkins/.local/bin/pipenv install --dev
+                        /home/jenkins/.local/bin/pipenv run python setup.py sdist bdist_wheel
+                        ls -l ./dist
+                        /home/jenkins/.local/bin/pipenv run python -m twine upload -u $USERNAME -p $PASSWORD dist/*
                     '''
                 }
             }
