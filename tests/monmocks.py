@@ -1,4 +1,66 @@
+from urllib.parse import parse_qs
+
 from httmock import response, urlmatch
+
+
+class IssueMocks(object):
+    LIST_TESTREPORT_ENDPOINT_ISSUES_RESPONSE = (
+        """{ "status": { "message": "Success", "code": "200" }, "data": [ { "timestamp": "2025-10-05T00:00:00Z","""
+        """ "endpoint_group": "ARGO_MON", "service": "www.example.com-example.api", "endpoint": """
+        """ "www.example.com_01-234567-890ABC", "status": "CRITICAL", "info": { "ID": "01-234567-890ABC", "URL": """
+        """ "https://www.example.com/api", "groupname": "ARGO_MON" } }, { "timestamp": "2025-10-05T00:00:00Z", """
+        """ "endpoint_group": "ARGO_MON", "service": "www.example.com-web", "endpoint": "www.example.com_ABCD", """
+        """ "status": "WARNING", "info": { "ID": "ABCD", "URL": "https://www.example.com" } } ] }"""
+    )
+
+    LIST_TESTREPORT_ENDPOINT_ISSUES_RESPONSE_CRITICAL = (
+        """{ "status": { "message": "Success", "code": "200" }, "data": [ { "timestamp": "2025-10-05T00:00:00Z","""
+        """ "endpoint_group": "ARGO_MON", "service": "www.example.com-example.api", "endpoint": """
+        """ "www.example.com_01-234567-890ABC", "status": "CRITICAL", "info": { "ID": "01-234567-890ABC", "URL": """
+        """ "https://www.example.com/api", "groupname": "ARGO_MON" } } ] }"""
+    )
+
+    list_testreport_endpoint_issues_urlmatch = dict(
+        netloc="localhost", path="/api/v2/issues/REPORT01/endpoints", method="GET"
+    )
+
+    @urlmatch(**list_testreport_endpoint_issues_urlmatch)
+    def list_testreport_endpoint_issues_mock(self, url, request):
+        assert url.path == "/api/v2/issues/REPORT01/endpoints"
+        assert request.method == "GET"
+        qs = parse_qs(url.query)
+        if 'filter' in qs and 'CRITICAL' in qs.get("filter"):
+            return response(200, self.LIST_TESTREPORT_ENDPOINT_ISSUES_RESPONSE_CRITICAL, None, None, 5, request)
+        else:
+            return response(200, self.LIST_TESTREPORT_ENDPOINT_ISSUES_RESPONSE, None, None, 5, request)
+
+    LIST_TESTREPORT_METRIC_ISSUES_RESPONSE = (
+        """{ "status": { "message": "Success", "code": "200" }, "data": [ { "service": "www.example.com-example.web","""
+        """ "hostname": "www.example.com_01-234567-890ABC", "metric": "generic.certificate.validity", "status":"""
+        """ "WARNING", "info": { "ID": "01-234567-890ABC", "URL": "https://www.example.com" } }, { "service":"""
+        """ "www.example.com-example.api", "hostname": "api.example.com_EFGH", "metric": "generic.http.connect","""
+        """ "status": "CRITICAL", "info": { "ID": "EFGH", "URL": "https://api.example.com" } } ] }"""
+    )
+
+    LIST_TESTREPORT_METRIC_ISSUES_RESPONSE_CRITICAL = (
+        """{ "status": { "message": "Success", "code": "200" }, "data": [ { "service":"""
+        """ "www.example.com-example.api", "hostname": "api.example.com_EFGH", "metric": "generic.http.connect","""
+        """ "status": "CRITICAL", "info": { "ID": "EFGH", "URL": "https://api.example.com" } } ] }"""
+    )
+
+    list_testreport_metric_issues_urlmatch = dict(
+        netloc="localhost", path="/api/v2/issues/REPORT01/groups/ARGO_MON/metrics", method="GET"
+    )
+
+    @urlmatch(**list_testreport_metric_issues_urlmatch)
+    def list_testreport_metric_issues_mock(self, url, request):
+        assert url.path == "/api/v2/issues/REPORT01/groups/ARGO_MON/metrics"
+        assert request.method == "GET"
+        qs = parse_qs(url.query)
+        if 'filter' in qs and 'CRITICAL' in qs.get("filter"):
+            return response(200, self.LIST_TESTREPORT_METRIC_ISSUES_RESPONSE_CRITICAL, None, None, 5, request)
+        else:
+            return response(200, self.LIST_TESTREPORT_METRIC_ISSUES_RESPONSE, None, None, 5, request)
 
 
 class ReportMocks(object):

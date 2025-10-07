@@ -60,6 +60,8 @@ if __name__ == "__main__":
     else:
         api_key = args.api_key
 
+    if args.end_date is None:
+        args.end_date = args.start_date
     try:
         mon = ArgoMonitoringService(args.host, api_key)
         results = (

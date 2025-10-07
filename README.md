@@ -46,9 +46,10 @@ mon = ArgoMonitoringService(endpoint="mon_endpoint", apikey="your_api_key")
 
 In the `examples` folder, you may find the following library usage examples:
 
-* getting a list of reports for a tenant (`examples/get_reports.py`)
+* getting a list of reports for a tenant
 * getting the status for each endpoint of all groups defined in a report
 * getting daily/monthy A/R results for groups defined in a report
+* getting information on issues for endpoints or metrics under a report
 
 Help on running each example is available by running the example with `-h`.
 
@@ -85,6 +86,16 @@ where `REPORTNAME` is the name of a report, as listed in the 1st example, and `Y
 * The optional argument `--monthly` may be specified to fetch results with a monthy granularity, instead of daily.
 * The optional argument `--supergroup SUPERGROUPNAME` may be specified, in order to fetch results for a specific top-level group (supergroup)
 * The optional argument `--group GROUNAME` may be specified in order to fetch results for specific group of each supergroup, instead of all groups
+
+### Getting information on issues
+
+To get informations on issues for endpoints under a report, run
+
+```bash
+python3 ./examples/get_issues.py --host api.devel.mon.argo.grnet.gr --api-key ~/mon.key -f --report REPORTNAME --date YYYY-MM-DD --status CRITICAL
+```
+
+where `date` is an optional date to receive historic information (if omitted, defaults to live issues), and `status` is an optional criticality filter (CRITICAL or WARNING). To get information on issues for a service group's metrics instead, use the `--metrics` flag, followed by a `--group <GROUPNAME>` parameter, to set the service group.
 
 ## Environment variables
 

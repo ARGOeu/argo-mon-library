@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 
+from .issues import Issues
 from .reportresults import ReportResults
 from .reportstatus import ReportStatus
 from .restresource import RestResourceItem, RestResourceList
@@ -52,7 +53,7 @@ class ReportProfiles(RestResourceList):
         for i in self._parent._profiles:
             self.update({i["id"]: ReportProfile(self, i)})
             self._pageCount = 1
-            self._currentPage = 1
+            self._current_page = 1
 
     def _fetch_route(self):
         return ""
@@ -97,7 +98,7 @@ class ReportFilterTags(RestResourceList):
         for i in self._parent._filter_tags:
             self.update({i["name"]: ReportFilterTag(self, i)})
             self._pageCount = 1
-            self._currentPage = 1
+            self._current_page = 1
 
     def _fetch_route(self):
         return ""
@@ -161,6 +162,10 @@ class ReportComputations(object):
 
 class Report(RestResourceItem):
     """Main class for monitoring reports"""
+
+    @property
+    def issues(self):
+        return Issues(self)
 
     @property
     def info(self):

@@ -30,7 +30,17 @@ class RestResource(abc.ABC):
     def id_name(self):
         """
         Return the JSON field name that identifies the resource.
-        Defaults to "id", subclasses may need to override it
+        Defaults to "id", subclasses may need to override it.
+
+        Id names for child resources (RestResourceItem) must be declared
+        in the parent resource (RestResourceList), as the parent must know the id name
+        beforehand, in order to populate the dictionary of children.
+
+        Dotted paths are supported for JSON fields that are not at the top level of the data
+        object returned by the API.
+
+        The return value may also be a list, to denote a compound key. In that case, the
+        key will consist of the values of the JSON fields, concatenated with an undercore.
         """
         return "id"
 
@@ -143,14 +153,14 @@ class RestResourceList(OrderedDict, RestResource):
         self._parent = parent
         self._page_size = page_size
         self._page_count = 1
-        self._currentPage = 0
+        self._current_page = 0
         self._cache = OrderedDict()
 
     def refresh(self):
         """Clear the internal dict, the cache dict, and reset paging"""
         self.clear()
         self._cache.clear()
-        self._currentPage = 0
+        self._current_page = 0
         self._page_count = 1
         return self
 
@@ -182,12 +192,33 @@ class RestResourceList(OrderedDict, RestResource):
         """Abstract method to be implemented by subclasses, to create the appropriate RestResourceItem instance"""
         raise Exception("Operation not supported or not implemented")
 
+    def _get_item_id(self, i):
+        item_id = ""
+        id_names = self.id_name
+        if not type(id_names) is list:
+            id_names = [id_names]
+        # iterate id_name entries for compound IDs
+        for id_name in id_names:
+            # walk JSON structure if the id_name attribute is a dotted path
+            id_path = id_name.split(".")
+            if len(id_path) == 1:
+                if type(i) is dict:
+                    tmp_item_id = i[id_name]
+                else:
+                    tmp_item_id = getattr(i, id_name)
+            else:
+                tmp_item_id = i
+                for j in id_path:
+                    tmp_item_id = tmp_item_id[j]
+            item_id = "{0}_{1}".format(item_id, tmp_item_id)
+        return item_id.lstrip("_")
+
     def _fetch(self):
         """
         Fetch results from the REST API, using the fetch route denoted by self::_fetch_route
 
         Will fetch up to self::_page_size results each time, keeping track of the current page
-        of results in self::_currentPage
+        of results in self::_current_page
         """
         logger.debug("FETCHING LIST")
         res = self.connection.make_request(
@@ -195,7 +226,7 @@ class RestResourceList(OrderedDict, RestResource):
                 self.endpoint, *self._fetch_args()
             ),
             self._fetch_route(),
-            # params={"page": self._currentPage + 1},
+            self._fetch_params(),
         )
         # hardcode page_count to 1, as the API does not support paging
         self._page_count = 1
@@ -204,24 +235,26 @@ class RestResourceList(OrderedDict, RestResource):
             data_root = res
         else:
             data_root = res[self.data_root]
+
         for i in data_root:
-            self.update({i[self.id_name]: self._create_child(i)})
-        self._currentPage += 1
+            item_id = self._get_item_id(i)
+            self.update({str(item_id): self._create_child(i)})
+        self._current_page += 1
 
     def __iter__(self):
         """Iterate over all results, using self::_fetch for each page"""
-        self._currentPage = 0
+        self._current_page = 0
         logger.debug("ITERING")
-        while self._currentPage < self._page_count:
+        while self._current_page < self._page_count:
             self._fetch()
             logger.debug(
-                "PAGE " + str(self._currentPage) + " of " + str(self._page_count)
+                "PAGE " + str(self._current_page) + " of " + str(self._page_count)
             )
             if len(self.items()) == 0:
                 return None
             else:
                 for i, j in enumerate(self.items()):
-                    if i >= (self._currentPage - 1) * self._page_size:
+                    if i >= (self._current_page - 1) * self._page_size:
                         yield j[1]
         logger.debug("EOD")
 
@@ -242,7 +275,7 @@ class RestResourceList(OrderedDict, RestResource):
                 if item is None:
                     item = self._create_child({"__fetch__": id})
                     if item is not None:
-                        self._cache.update({getattr(item, self.id_name): item})
+                        self._cache.update({self._get_item_id(item): item})
         return item
 
     def get(self, id, default=None):

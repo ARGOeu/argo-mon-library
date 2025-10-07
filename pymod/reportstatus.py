@@ -32,7 +32,7 @@ class ReportStatusGroupStatuses(RestResourceList):
         for i in self._parent._statuses:
             self.update({i["timestamp"]: ReportStatusGroupStatus(self, i)})
             self._pageCount = 1
-            self._currentPage = 1
+            self._current_page = 1
 
 
 class ReportStatusGroupEndpoint(RestResourceItem):
@@ -77,7 +77,7 @@ class ReportStatusGroupEndpoints(RestResourceList):
         for i in self._parent._endpoints:
             self.update({i["info"]["ID"]: ReportStatusGroupEndpoint(self, i)})
             self._pageCount = 1
-            self._currentPage = 1
+            self._current_page = 1
 
     def by_name(self, name: str):
         for i in self:
@@ -132,7 +132,7 @@ class ReportStatusGroups(RestResourceList):
         for i in self._parent._groups:
             self.update({i["name"]: ReportStatusGroup(self, i)})
             self._pageCount = 1
-            self._currentPage = 1
+            self._current_page = 1
 
     def _fetch_route(self):
         return ""
