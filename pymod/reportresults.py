@@ -52,7 +52,7 @@ class ReportResultsGroups(ReportResultsGroupsBase):
         for i in self._parent._groups:
             self.update({i["name"]: ReportResultsGroup(self, i)})
         self._pageCount = 1
-        self._currentPage = 1
+        self._current_page = 1
 
 
 class ReportResultsSupergroup(ReportResultsGroup):
@@ -72,7 +72,7 @@ class ReportResultsSupergroups(ReportResultsGroupsBase):
         for i in self._parent.results:
             self.update({i["name"]: ReportResultsSupergroup(self, i)})
         self._pageCount = 1
-        self._currentPage = 1
+        self._current_page = 1
 
 
 class ReportResultsResult(RestResourceItem):
@@ -107,7 +107,7 @@ class ReportResultsResults(RestResourceList):
         for i in self._parent._results:
             self.update({i["date"]: ReportResultsResult(self, i)})
             self._pageCount = 1
-            self._currentPage = 1
+            self._current_page = 1
 
 
 class ReportResults(RestResourceItem):
