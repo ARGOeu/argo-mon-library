@@ -69,7 +69,7 @@ class ArgoMonitoringService(object):
     """Module main class, to access the REST API"""
 
     def __init__(self, endpoint: str, apikey: str):
-        self._endpoint = endpoint
+        self._argo_endpoint = endpoint
         self._conn = HttpRequests(apikey)
         self._period = Period(
             datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
@@ -90,8 +90,8 @@ class ArgoMonitoringService(object):
         return self._conn
 
     @property
-    def endpoint(self):
-        return self._endpoint
+    def argo_endpoint(self):
+        return self._argo_endpoint
 
     def period(
         self,

@@ -49,6 +49,14 @@ class HttpRequests(object):
                 "get",
                 "https://{0}/api/v2/issues/{1}/groups/{2}/metrics",
             ],
+            "get_endpoint_metric_results": [
+                "get",
+                "https://{0}/api/v2/metric_result/{1}",
+            ],
+            "get_endpoint_metric_results_metric": [
+                "get",
+                "https://{0}/api/v2/metric_result/{1}/{2}",
+            ],
         }
 
     def _error_dict(self, response_content, status):

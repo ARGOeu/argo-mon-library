@@ -84,13 +84,13 @@ class TestReports(unittest.TestCase):
             self._validateReportData(report)
 
     def testGetReportByID(self):
-        with HTTMock(self.ReportMocks.get_report_mock):
+        with HTTMock(self.ReportMocks.list_reports_mock), HTTMock(self.ReportMocks.get_report_mock):
             report = self.mon.reports["efd48668-e24a-4a2c-a53f-3f388664b691"]
             self.assertIsNotNone(report)
             self._validateReportData(report)
 
     def testReportJSON(self):
-        with HTTMock(self.ReportMocks.get_report_mock):
+        with HTTMock(self.ReportMocks.list_reports_mock), HTTMock(self.ReportMocks.get_report_mock):
             report = self.mon.reports["efd48668-e24a-4a2c-a53f-3f388664b691"]
             self.assertIsNotNone(report)
             jsons = str(report)

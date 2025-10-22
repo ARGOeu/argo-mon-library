@@ -3,7 +3,8 @@ import unittest
 
 from httmock import HTTMock
 
-from pymod import ArgoMonitoringService, EndpointIssues, MetricIssues
+from pymod import (ArgoMonitoringService, EndpointIssueMetricDetails,
+                   EndpointIssues, MetricIssues)
 
 from .monmocks import IssueMocks, ReportMocks
 
@@ -51,6 +52,15 @@ class TestIssues(unittest.TestCase):
         self.assertEqual(str(issues[1].status), "CRITICAL")
         self.assertEqual(str(issues[1].id), "EFGH")
         self.assertEqual(str(issues[1].url), "https://api.example.com")
+
+    def _validateEndpointIssueMetricDetailsData(self, issue_details: EndpointIssueMetricDetails):
+        self.assertEqual(len(list(issue_details)), 1)
+
+        for i in [0, "2025-10-05T02:23:16Z"]:
+            self.assertEqual(str(issue_details[i].timestamp), "2025-10-05T02:23:16Z")
+            self.assertEqual(str(issue_details[i].value), "CRITICAL")
+            self.assertEqual(str(issue_details[i].summary), "Cannot connect to www.example.com on port 443")
+            self.assertEqual(str(issue_details[i].message), "''")
 
     def testListEndpointIssues(self):
         with HTTMock(
@@ -129,3 +139,21 @@ class TestIssues(unittest.TestCase):
             self.assertTrue('"metric": "generic.certificate.validity"' in jsons)
             self.assertTrue('"id": "01-234567-890ABC"' in jsons)
             self.assertTrue('"url": "https://www.example.com"' in jsons)
+
+    def testListEndpointIssueMetricDetails(self):
+        with HTTMock(
+            self.ReportMocks.list_reports_mock,
+            self.IssueMocks.list_testreport_endpoint_issues_mock,
+            self.IssueMocks.get_endpoint_metric_result_mock,
+            self.IssueMocks.get_endpoint_metric_result_metric_mock
+        ):
+            issues = self.mon.period("2025-10-05T00:00:00Z").reports[0].issues.by_endpoint()
+            self.assertIsNotNone(issues)
+            self._validateEndpointIssuesData(issues)
+            self.assertEqual(len(list(issues)), 2)
+            self.assertEqual(len(list(issues[1].metrics)), 1)
+            self.assertEqual(len(list(issues[1].metrics[0].details)), 1)
+
+            for i in [0, "generic.http.connect"]:
+                self._validateEndpointIssueMetricDetailsData(issues[1].metrics[0].details)
+                self.assertEqual(issues[1].metrics[i].service, "www.example.com-web")

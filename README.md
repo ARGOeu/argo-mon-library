@@ -97,6 +97,8 @@ python3 ./examples/get_issues.py --host api.devel.mon.argo.grnet.gr --api-key ~/
 
 where `date` is an optional date to receive historic information (if omitted, defaults to live issues), and `status` is an optional criticality filter (CRITICAL or WARNING). To get information on issues for a service group's metrics instead, use the `--metrics` flag, followed by a `--group <GROUPNAME>` parameter, to set the service group.
 
+When getting information on endpoint issues, details about metric results may be obtained by employing the `--details <any|ENDPOINT>` parameter. A specific metric may be requested by using the `--metric <METRIC>` flag or a specific point in time within the day specified by `--date <YYYY-MM-DD>` may be requested by adding the `--timestamp <YYYY-MM-DDTHH:mm:ssZ>` parameter, where the timestamp value must be provided in Zulu format.
+
 ## Environment variables
 
 * `DEBUG`: Set to any truthy value in order to have debugging information printed to stdout, for development pusposes.

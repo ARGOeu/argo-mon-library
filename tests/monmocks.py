@@ -4,6 +4,42 @@ from httmock import response, urlmatch
 
 
 class IssueMocks(object):
+    GET_ENDPOINT_METRIC_RESULT_RESPONSE = (
+        """{"root": [{"Name": "www.example.com_ABCD","info": {"ID": "ABCD","URL":"""
+        """ "https://www.example.com"},"Metrics": [{"Name": "generic.http.connect","Service":"""
+        """ "www.example.com-web","Details": [{"Timestamp": "2025-10-05T02:23:16Z","Value":"""
+        """ "CRITICAL","Summary":"""
+        """ "Cannot connect to www.example.com on port 443","Message": "''"}]}]}]}"""
+    )
+
+    get_endpoint_metric_result_urlmatch = dict(
+        netloc="localhost", path="/api/v2/metric_result/www.example.com_ABCD", method="GET"
+    )
+
+    @urlmatch(**get_endpoint_metric_result_urlmatch)
+    def get_endpoint_metric_result_mock(self, url, request):
+        assert url.path == "/api/v2/metric_result/www.example.com_ABCD"
+        assert request.method == "GET"
+        return response(200, self.GET_ENDPOINT_METRIC_RESULT_RESPONSE, None, None, 5, request)
+
+    GET_ENDPOINT_METRIC_RESULT_METRIC_RESPONSE = (
+        """{"root": [{"Name": "www.example.com_ABCD","info": {"ID": "ABCD","URL":"""
+        """ "https://www.example.com"},"Metrics": [{"Name": "generic.http.connect","Service":"""
+        """ "www.example.com-web","Details": [{"Timestamp": "2025-10-05T02:23:16Z","Value":"""
+        """ "CRITICAL","Summary":"""
+        """ "Cannot connect to www.example.com on port 443","Message": "''"}]}]}]}"""
+    )
+
+    get_endpoint_metric_result_metric_urlmatch = dict(
+        netloc="localhost", path="/api/v2/metric_result/www.example.com_ABCD/generic.http.connect", method="GET"
+    )
+
+    @urlmatch(**get_endpoint_metric_result_metric_urlmatch)
+    def get_endpoint_metric_result_metric_mock(self, url, request):
+        assert url.path == "/api/v2/issues/www.example.com_ABCD/generic.http.connect"
+        assert request.method == "GET"
+        return response(200, self.GET_ENDPOINT_METRIC_RESULT_METRIC_RESPONSE, None, None, 5, request)
+
     LIST_TESTREPORT_ENDPOINT_ISSUES_RESPONSE = (
         """{ "status": { "message": "Success", "code": "200" }, "data": [ { "timestamp": "2025-10-05T00:00:00Z","""
         """ "endpoint_group": "ARGO_MON", "service": "www.example.com-example.api", "endpoint": """

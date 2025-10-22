@@ -4,7 +4,7 @@ import os
 from .argomonitoringservice import ArgoMonitoringService
 from .exceptions import (MonConnectionException, MonException,
                          MonServiceException, MonTimeoutException)
-from .issues import EndpointIssues, MetricIssues
+from .issues import EndpointIssueMetricDetails, EndpointIssues, MetricIssues
 from .reports import Report, ReportResults, ReportStatus
 
 logger = logging.getLogger(__name__)
@@ -38,5 +38,6 @@ __all__ = [
     "ReportResults",
     "ReportStatus",
     "EndpointIssues",
+    "EndpointIssueMetricDetails",
     "MetricIssues"
 ]
