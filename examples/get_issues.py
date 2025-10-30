@@ -28,7 +28,7 @@ if __name__ == "__main__":
         "--report", type=str, required=True, help="report name for issues"
     )
     parser.add_argument(
-        "--status", type=str, help="optional status filter (CRITICAL or WARNING)"
+        "--status", type=str, help="optional status filter (CRITICAL, WARNING, etc)"
     )
     parser.add_argument(
         "--date",

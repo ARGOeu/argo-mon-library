@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from .restresource import RestResourceItem, RestResourceList
 
 if TYPE_CHECKING:
+    from .argomonitoringservice import ArgoMonitoringService
     from .reports import Report
 
 
@@ -88,6 +89,7 @@ class IssuesBase(RestResourceList):
 
 class EndpointIssue(IssueBase):
     """Endpoint issue representation class"""
+
     @property
     def endpoint(self):
         return self._endpoint
@@ -103,6 +105,7 @@ class EndpointIssue(IssueBase):
 
 class EndpointIssues(IssuesBase):
     """Collection class for endpoint issues"""
+
     def _fetch_route(self):
         return "get_endpoint_issues"
 
@@ -112,11 +115,13 @@ class EndpointIssues(IssuesBase):
 
 class MetricIssue(IssueBase):
     """Metric issue representation class"""
+
     pass
 
 
 class MetricIssues(IssuesBase):
     """Collection class for metric issues"""
+
     def __init__(self, parent: Issues, group_name: str, status: str = ""):
         self._group_name = group_name
         super().__init__(parent, status)
@@ -140,6 +145,7 @@ class EndpointIssueMetricDetail(RestResourceItem):
 
     def __init__(self, parent, data={}):
         super().__init__(parent, data)
+        self._metric = self._parent._parent._name
         if data is not None:
             self.timestamp = data.get("Timestamp")
             self.summary = data.get("Summary")
@@ -150,6 +156,10 @@ class EndpointIssueMetricDetail(RestResourceItem):
         delattr(self, "Summary")
         delattr(self, "Value")
         delattr(self, "Message")
+
+    @property
+    def metric(self):
+        return self._metric
 
     @property
     def timestamp(self):
@@ -275,10 +285,20 @@ class EndpointIssueMetric(RestResourceItem):
         return args
 
 
-class EndpointIssueMetrics(RestResourceList):
-    """Collection class for metrics of endpoint issues"""
-    def __init__(self, parent: EndpointIssue, data={}):
-        self._status = parent._parent._status
+class MetricResults(RestResourceList):
+    """Collection class for generic metrics results"""
+
+    def __init__(
+        self,
+        parent: ArgoMonitoringService,
+        endpoint: str,
+        exec_time: Union[str, None] = None,
+        status: str = "",
+    ):
+        self._parent = parent
+        self._status = status
+        self._endpoint = endpoint
+        self._exec_time = exec_time
         super().__init__(parent)
 
     @property
@@ -289,21 +309,42 @@ class EndpointIssueMetrics(RestResourceList):
     def data_root(self):
         return "root.Metrics"
 
+    def _get_exec_time(self):
+        if self._exec_time is None:
+            return self._parent._period._start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        else:
+            return self._exec_time
+
+    def _get_endpoint(self):
+        return self._endpoint
+
     def _fetch_route(self):
         return "get_endpoint_metric_results"
 
     def _fetch_args(self):
-        return [self._parent.endpoint]
+        return [self._get_endpoint()]
 
     def _fetch_params(self):
-        args = {
-            "exec_time": self._parent._parent._parent._parent._period._start_date.strftime(
-                "%Y-%m-%dT%H:%M:%SZ"
-            )
-        }
+        args = {"exec_time": self._get_exec_time()}
         if self._status != "":
             args["filter"] = self._status
         return args
 
     def _create_child(self, data: dict):
         return EndpointIssueMetric(self, data)
+
+
+class EndpointIssueMetrics(MetricResults):
+    """Collection class for metrics of endpoint issues"""
+
+    def __init__(self, parent: EndpointIssue, data={}):
+        self._status = parent._parent._status
+        RestResourceList.__init__(self, parent)
+
+    def _get_exec_time(self):
+        return self._parent._parent._parent._parent._period._start_date.strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
+
+    def _get_endpoint(self):
+        return self._parent._endpoint

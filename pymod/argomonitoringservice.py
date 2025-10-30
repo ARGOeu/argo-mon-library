@@ -9,6 +9,7 @@ else:
 
 from .exceptions import MonException
 from .httprequests import HttpRequests
+from .issues import MetricResults
 from .reports import Reports
 
 
@@ -34,9 +35,7 @@ class Period(object):
                     hour=0, minute=0, second=0, microsecond=0
                 )
             else:
-                self._start_date = datetime.strptime(
-                    start_date, "%Y-%m-%dT%H:%M:%SZ"
-                )
+                self._start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ")
         elif type(start_date) is datetime:
             self._start_date = start_date
         else:
@@ -84,6 +83,39 @@ class ArgoMonitoringService(object):
         """
         self._reports = self._reports or Reports(self)
         return self._reports
+
+    def metric_results(
+        self,
+        endpoint: str,
+        metric: Union[str, None] = None,
+        timestamp: Union[str, None] = None,
+        status: str = "",
+    ) -> list:
+        """
+        Access a list of detailed metric results for a specific endpoint
+
+        If no metric is specified, results for all applicable metrics will
+        be returned. If a metric has been specified, then an additional
+        timestamp may be specified as well, to get an individual result.
+
+        If no timestamp has been specified, the execution time for the
+        metric results will be taken from the currently defined period,
+        otherwise the timestamp will take precedence.
+        """
+        ret = []
+        r = MetricResults(self, endpoint, timestamp, status)
+        if metric is not None:
+            m = r[metric]
+            if timestamp is None:
+                for d in m.details:
+                    ret.append(d)
+            else:
+                ret.append(m.details[timestamp])
+        else:
+            for m in r:
+                for d in m.details:
+                    ret.append(d)
+        return ret
 
     @property
     def connection(self):
