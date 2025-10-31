@@ -3,7 +3,8 @@ import unittest
 
 from httmock import HTTMock
 
-from pymod import ArgoMonitoringService, EndpointIssues, MetricIssues
+from pymod import (ArgoMonitoringService, EndpointIssueMetricDetails,
+                   EndpointIssues, MetricIssues)
 
 from .monmocks import IssueMocks, ReportMocks
 
@@ -52,10 +53,24 @@ class TestIssues(unittest.TestCase):
         self.assertEqual(str(issues[1].id), "EFGH")
         self.assertEqual(str(issues[1].url), "https://api.example.com")
 
+    def _validateEndpointIssueMetricDetailsData(
+        self, issue_details: EndpointIssueMetricDetails
+    ):
+        self.assertEqual(len(list(issue_details)), 1)
+
+        for i in [0, "2025-10-05T02:23:16Z"]:
+            self.assertEqual(str(issue_details[i].timestamp), "2025-10-05T02:23:16Z")
+            self.assertEqual(str(issue_details[i].value), "CRITICAL")
+            self.assertEqual(
+                str(issue_details[i].summary),
+                "Cannot connect to www.example.com on port 443",
+            )
+            self.assertEqual(str(issue_details[i].message), "''")
+
     def testListEndpointIssues(self):
         with HTTMock(
             self.ReportMocks.list_reports_mock,
-            self.IssueMocks.list_testreport_endpoint_issues_mock
+            self.IssueMocks.list_testreport_endpoint_issues_mock,
         ):
             issues = self.mon.reports[0].issues.by_endpoint()
             self.assertIsNotNone(issues)
@@ -64,7 +79,7 @@ class TestIssues(unittest.TestCase):
     def testListEndpointIssuesFilter(self):
         with HTTMock(
             self.ReportMocks.list_reports_mock,
-            self.IssueMocks.list_testreport_endpoint_issues_mock
+            self.IssueMocks.list_testreport_endpoint_issues_mock,
         ):
             issues = self.mon.reports[0].issues.by_endpoint("CRITICAL")
             self.assertIsNotNone(issues)
@@ -73,7 +88,7 @@ class TestIssues(unittest.TestCase):
     def testListEndpointIssuesJSON(self):
         with HTTMock(
             self.ReportMocks.list_reports_mock,
-            self.IssueMocks.list_testreport_endpoint_issues_mock
+            self.IssueMocks.list_testreport_endpoint_issues_mock,
         ):
             issues = self.mon.reports[0].issues.by_endpoint()
             self.assertIsNotNone(issues)
@@ -95,7 +110,7 @@ class TestIssues(unittest.TestCase):
     def testListMetricIssues(self):
         with HTTMock(
             self.ReportMocks.list_reports_mock,
-            self.IssueMocks.list_testreport_metric_issues_mock
+            self.IssueMocks.list_testreport_metric_issues_mock,
         ):
             issues = self.mon.reports[0].issues.by_metric("ARGO_MON")
             self.assertIsNotNone(issues)
@@ -104,7 +119,7 @@ class TestIssues(unittest.TestCase):
     def testListMetricIssuesFilter(self):
         with HTTMock(
             self.ReportMocks.list_reports_mock,
-            self.IssueMocks.list_testreport_metric_issues_mock
+            self.IssueMocks.list_testreport_metric_issues_mock,
         ):
             issues = self.mon.reports[0].issues.by_metric("ARGO_MON", "CRITICAL")
             self.assertIsNotNone(issues)
@@ -113,7 +128,7 @@ class TestIssues(unittest.TestCase):
     def testListMetricIssuesJSON(self):
         with HTTMock(
             self.ReportMocks.list_reports_mock,
-            self.IssueMocks.list_testreport_metric_issues_mock
+            self.IssueMocks.list_testreport_metric_issues_mock,
         ):
             issues = self.mon.reports[0].issues.by_metric("ARGO_MON")
             self.assertIsNotNone(issues)
@@ -129,3 +144,53 @@ class TestIssues(unittest.TestCase):
             self.assertTrue('"metric": "generic.certificate.validity"' in jsons)
             self.assertTrue('"id": "01-234567-890ABC"' in jsons)
             self.assertTrue('"url": "https://www.example.com"' in jsons)
+
+    def testListEndpointIssueMetricDetails(self):
+        with HTTMock(
+            self.ReportMocks.list_reports_mock,
+            self.IssueMocks.list_testreport_endpoint_issues_mock,
+            self.IssueMocks.get_endpoint_metric_result_mock,
+            self.IssueMocks.get_endpoint_metric_result_metric_mock,
+        ):
+            issues = (
+                self.mon.period("2025-10-05T00:00:00Z").reports[0].issues.by_endpoint()
+            )
+            self.assertIsNotNone(issues)
+            self._validateEndpointIssuesData(issues)
+            self.assertEqual(len(list(issues)), 2)
+            self.assertEqual(len(list(issues[1].metrics)), 1)
+            self.assertEqual(len(list(issues[1].metrics[0].details)), 1)
+
+            for i in [0, "generic.http.connect"]:
+                self._validateEndpointIssueMetricDetailsData(
+                    issues[1].metrics[0].details
+                )
+                self.assertEqual(issues[1].metrics[i].service, "www.example.com-web")
+
+    def testGetMetricResults(self):
+        with HTTMock(
+            self.IssueMocks.get_endpoint_metric_result_mock,
+        ):
+            for metric_results in [
+                self.mon.period("2025-10-05T00:00:00Z").metric_results(
+                    "www.example.com_ABCD"
+                ),
+                self.mon.period("2025-10-05T00:00:00Z").metric_results(
+                    "www.example.com_ABCD", "generic.http.connect"
+                ),
+                self.mon.period("2025-10-05T00:00:00Z").metric_results(
+                    "www.example.com_ABCD",
+                    "generic.http.connect",
+                    "2025-10-05T02:23:16Z",
+                ),
+            ]:
+                self.assertIsNotNone(metric_results)
+                self.assertEqual(len(metric_results), 1)
+                self.assertEqual(metric_results[0].metric, "generic.http.connect")
+                self.assertEqual(metric_results[0].timestamp, "2025-10-05T02:23:16Z")
+                self.assertEqual(
+                    metric_results[0].summary,
+                    "Cannot connect to www.example.com on port 443",
+                )
+                self.assertEqual(metric_results[0].value, "CRITICAL")
+                self.assertEqual(metric_results[0].message, "''")

@@ -19,8 +19,8 @@ class RestResource(abc.ABC):
         self._parent = parent
 
     @property
-    def endpoint(self):
-        return self._parent.endpoint
+    def argo_endpoint(self):
+        return self._parent.argo_endpoint
 
     @property
     def connection(self):
@@ -71,22 +71,32 @@ class RestResourceItem(RestResource):
         self.id = None
         if len(data) == 1 and data.get("__fetch__") is not None:
             self.id = data["__fetch__"]
-            if self.data_root is None:
-                data = self._fetch()
-            else:
-                data = self._fetch()[self.data_root][0]
-        for k in data:
-            # logger.debug("setting " + k + " to " + (str(data[k]) or "<None>"))
-            setattr(self, k, data[k])
+            data = self._fetch()
+            if self.data_root is not None:
+                data_root_path = self.data_root.split(".")
+                for i in data_root_path:
+                    data = data[i]
+                if type(data) is list:
+                    data = data[0]
+        if data is not None:
+            for k in data:
+                # logger.debug("setting " + k + " to " + (str(data[k]) or "<None>"))
+                setattr(self, k, data[k])
 
     def __str__(self):
-        """Return a JSON representation of the resource, recursivly."""
+        """
+        Return a JSON representation of the resource, recursivly.
+
+        Internal properties starting with "_x_" will be excluded, as will
+        "parent" and "_parent"
+        """
+
         # Extract a dictonary of primitive properties
         d1 = {
             x: self.__dict__[x]
             for x in self.__dict__
             if not isinstance(self.__dict__[x], RestResource)
-            and x not in {"_parent", "parent"}
+            and x not in {"_parent", "parent"} and not x.startswith("_x_")
         }
         while True:
             changed = False
@@ -105,7 +115,7 @@ class RestResourceItem(RestResource):
         # Loop over properties that are RestResource instances (excluding "_parent")
         # and append their properties to the dictionary
         for x in self.__dict__:
-            if isinstance(self.__dict__[x], RestResource) and x not in {"_parent"}:
+            if isinstance(self.__dict__[x], RestResource) and x not in {"_parent"} and not x.startswith("_x_"):
                 d2 = self.__dict__[x].__dict__
                 del d2["_parent"]
                 d1 = {**d1, x: d2}
@@ -130,7 +140,7 @@ class RestResourceItem(RestResource):
         logger.debug("FETCHING ITEM")
         res = self.connection.make_request(
             self.connection.routes[self._fetch_route()][1].format(
-                self.endpoint, *self._fetch_args()
+                self.argo_endpoint, *self._fetch_args()
             ),
             self._fetch_route(),
             self._fetch_params(),
@@ -146,7 +156,7 @@ class RestResourceList(OrderedDict, RestResource):
     and a separate cache dict to avoid re-fetching individual items.
     """
 
-    def __init__(self, parent, page_size=10):
+    def __init__(self, parent, page_size=1):
         logger.debug("Initing RestResourceList object " + str(type(self)))
         super(OrderedDict, self).__init__()
         super(RestResource, self).__init__()
@@ -192,7 +202,7 @@ class RestResourceList(OrderedDict, RestResource):
         """Abstract method to be implemented by subclasses, to create the appropriate RestResourceItem instance"""
         raise Exception("Operation not supported or not implemented")
 
-    def _get_item_id(self, i):
+    def _get_item_id(self, item):
         item_id = ""
         id_names = self.id_name
         if not type(id_names) is list:
@@ -202,12 +212,12 @@ class RestResourceList(OrderedDict, RestResource):
             # walk JSON structure if the id_name attribute is a dotted path
             id_path = id_name.split(".")
             if len(id_path) == 1:
-                if type(i) is dict:
-                    tmp_item_id = i[id_name]
+                if type(item) is dict:
+                    tmp_item_id = item[id_name]
                 else:
-                    tmp_item_id = getattr(i, id_name)
+                    tmp_item_id = getattr(item, id_name)
             else:
-                tmp_item_id = i
+                tmp_item_id = item
                 for j in id_path:
                     tmp_item_id = tmp_item_id[j]
             item_id = "{0}_{1}".format(item_id, tmp_item_id)
@@ -223,7 +233,7 @@ class RestResourceList(OrderedDict, RestResource):
         logger.debug("FETCHING LIST")
         res = self.connection.make_request(
             self.connection.routes[self._fetch_route()][1].format(
-                self.endpoint, *self._fetch_args()
+                self.argo_endpoint, *self._fetch_args()
             ),
             self._fetch_route(),
             self._fetch_params(),
@@ -231,10 +241,17 @@ class RestResourceList(OrderedDict, RestResource):
         # hardcode page_count to 1, as the API does not support paging
         self._page_count = 1
         # Create a RestResourceItem for each JSON object in the response, and add it to the internal dict
-        if self.data_root is None:
-            data_root = res
-        else:
-            data_root = res[self.data_root]
+        data_root = res
+        if self.data_root is not None:
+            data_root_path = self.data_root.split(".")
+            for i in data_root_path:
+                # workaround for paths enclosed in unary lists
+                if type(data_root) is list:
+                    if len(data_root) == 1:
+                        data_root = data_root[0]
+                    else:
+                        raise RuntimeError("Non unary list detected which walking data root path")
+                data_root = data_root.get(i)
 
         for i in data_root:
             item_id = self._get_item_id(i)
@@ -266,6 +283,10 @@ class RestResourceList(OrderedDict, RestResource):
         If not, check the cache. If there's no such item, attempt a fetch request and cache the item
         upon success
         """
+        # try to fetch data if the internal dict is empty
+        if len(self) == 0:
+            self._fetch()
+
         if isinstance(id, int):
             item = list(self)[id]
         else:
@@ -305,7 +326,7 @@ class RestResourceList(OrderedDict, RestResource):
                 body = item
             res = self.connection.make_request(
                 self.connection.routes[self._add_route()][1].format(
-                    self.endpoint, *self._add_args()
+                    self.argo_endpoint, *self._add_args()
                 ),
                 self._add_route(),
                 body=body,

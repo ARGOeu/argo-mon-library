@@ -50,6 +50,7 @@ In the `examples` folder, you may find the following library usage examples:
 * getting the status for each endpoint of all groups defined in a report
 * getting daily/monthy A/R results for groups defined in a report
 * getting information on issues for endpoints or metrics under a report
+* getting metric results for an endpoint 
 
 Help on running each example is available by running the example with `-h`.
 
@@ -89,13 +90,25 @@ where `REPORTNAME` is the name of a report, as listed in the 1st example, and `Y
 
 ### Getting information on issues
 
-To get informations on issues for endpoints under a report, run
+To get information on issues for endpoints under a report, run
 
 ```bash
 python3 ./examples/get_issues.py --host api.devel.mon.argo.grnet.gr --api-key ~/mon.key -f --report REPORTNAME --date YYYY-MM-DD --status CRITICAL
 ```
 
 where `date` is an optional date to receive historic information (if omitted, defaults to live issues), and `status` is an optional criticality filter (CRITICAL or WARNING). To get information on issues for a service group's metrics instead, use the `--metrics` flag, followed by a `--group <GROUPNAME>` parameter, to set the service group.
+
+When getting information on endpoint issues, details about metric results may be obtained by employing the `--details <any|ENDPOINT>` parameter. A specific metric may be requested by using the `--metric <METRIC>` flag or a specific point in time within the day specified by `--date <YYYY-MM-DD>` may be requested by adding the `--timestamp <YYYY-MM-DDTHH:mm:ssZ>` parameter, where the timestamp value must be provided in Zulu format.
+
+### Getting metric results for an endpoint
+
+Similar to the previous example, one can get details about metric issues or results in general more succintly, by making use of the `metric_results` resource, provided one knows the endpoint and optionally metric of interest, beforehand. In this example, we run
+
+```bash
+python3 ./examples/get_issues.py --host api.devel.mon.argo.grnet.gr --api-key ~/mon.key -f --date YYYY-MM-DD --endpoint ENDPOINT
+```
+
+where the `date` parameter works the same as in the previous example, and the `endpoint` parameter defines the endpoint of interest. Optionally, the parameters `status` and `metric` may be added, in order to filter by specific criticality or metric. If a metric has been specified, an optional `timestamp` parameter may be added as well, in order to pinpoint the returned details to a specific event.
 
 ## Environment variables
 
