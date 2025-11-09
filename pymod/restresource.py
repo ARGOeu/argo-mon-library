@@ -250,7 +250,7 @@ class RestResourceList(OrderedDict, RestResource):
                     if len(data_root) == 1:
                         data_root = data_root[0]
                     else:
-                        raise RuntimeError("Non unary list detected which walking data root path")
+                        raise RuntimeError("Non unary list detected while walking data root path")
                 data_root = data_root.get(i)
 
         for i in data_root:

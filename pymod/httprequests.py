@@ -57,6 +57,26 @@ class HttpRequests(object):
                 "get",
                 "https://{0}/api/v2/metric_result/{1}/{2}",
             ],
+            "get_flapping_groups": [
+                "get",
+                "https://{0}/api/v2/trends/{1}/flapping/groups",
+            ],
+            "get_flapping_services": [
+                "get",
+                "https://{0}/api/v2/trends/{1}/flapping/services",
+            ],
+            "get_flapping_endpoints": [
+                "get",
+                "https://{0}/api/v2/trends/{1}/flapping/endpoints",
+            ],
+            "get_flapping_metrics": [
+                "get",
+                "https://{0}/api/v2/trends/{1}/flapping/metrics",
+            ],
+            "get_flapping_metric_tags": [
+                "get",
+                "https://{0}/api/v2/trends/{1}/flapping/metrics/tags",
+            ],
         }
 
     def _error_dict(self, response_content, status):

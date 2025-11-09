@@ -6,6 +6,7 @@ from .exceptions import (MonConnectionException, MonException,
                          MonServiceException, MonTimeoutException)
 from .issues import EndpointIssueMetricDetails, EndpointIssues, MetricIssues
 from .reports import Report, ReportResults, ReportStatus
+from .trends import FlappingType, Trends
 
 logger = logging.getLogger(__name__)
 if os.getenv("DEBUG") is not None and str(os.getenv("DEBUG")).lower() in [
@@ -39,5 +40,7 @@ __all__ = [
     "ReportStatus",
     "EndpointIssues",
     "EndpointIssueMetricDetails",
-    "MetricIssues"
+    "MetricIssues",
+    "Trends",
+    "FlappingType"
 ]
