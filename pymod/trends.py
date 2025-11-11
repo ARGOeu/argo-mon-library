@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import IntEnum
 from typing import TYPE_CHECKING
 
 from .restresource import RestResourceItem, RestResourceList
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from .reports import Report
 
 
-class FlappingType(Enum):
+class FlappingType(IntEnum):
     """Enumeration type for flapping items"""
 
     GROUPS = 1
