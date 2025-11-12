@@ -3,6 +3,99 @@ from urllib.parse import parse_qs
 from httmock import response, urlmatch
 
 
+class TrendMocks(object):
+    GET_FLAPPING_GROUPS_RESPONSE = (
+        """{"status": {"message": "Success", "code": "200"}, "data": [{"endpoint_group": "ARGO_MON", "flapping": 5},"""
+        """ {"endpoint_group": "ARGO_MON2", "flapping": 1 }]}"""
+    )
+
+    get_flapping_groups_urlmatch = dict(
+        netloc="localhost", path="/api/v2/trends/REPORT01/flapping/groups", method="GET"
+    )
+
+    @urlmatch(**get_flapping_groups_urlmatch)
+    def get_flapping_groups_mock(self, url, request):
+        assert url.path == "/api/v2/trends/REPORT01/flapping/groups"
+        assert request.method == "GET"
+        return response(200, self.GET_FLAPPING_GROUPS_RESPONSE, None, None, 5, request)
+
+    GET_FLAPPING_SERVICES_RESPONSE = (
+        """{"status": {"message": "Success", "code": "200"}, "data": [{"endpoint_group": "ARGO_MON", "service":"""
+        """ "www.example.com-web", "flapping": 5}, {"endpoint_group": "ARGO_MON2", "service":"""
+        """ "www.example.com-api", "flapping": 1 }]}"""
+    )
+
+    get_flapping_services_urlmatch = dict(
+        netloc="localhost", path="/api/v2/trends/REPORT01/flapping/services", method="GET"
+    )
+
+    @urlmatch(**get_flapping_services_urlmatch)
+    def get_flapping_services_mock(self, url, request):
+        assert url.path == "/api/v2/trends/REPORT01/flapping/services"
+        assert request.method == "GET"
+        return response(200, self.GET_FLAPPING_SERVICES_RESPONSE, None, None, 5, request)
+
+    GET_FLAPPING_ENDPOINTS_RESPONSE = (
+        """{"status": {"message": "Success", "code": "200"}, "data": [{"endpoint_group": "ARGO_MON", "service":"""
+        """ "www.example.com-web", "endpoint": "https://www.example.com", "flapping": 5}, {"endpoint_group": """
+        """ "ARGO_MON2", "service": "www.example.com-api", "endpoint": "https://api.example.com", "flapping": 1 }]}"""
+    )
+
+    get_flapping_endpoints_urlmatch = dict(
+        netloc="localhost", path="/api/v2/trends/REPORT01/flapping/endpoints", method="GET"
+    )
+
+    @urlmatch(**get_flapping_endpoints_urlmatch)
+    def get_flapping_endpoints_mock(self, url, request):
+        assert url.path == "/api/v2/trends/REPORT01/flapping/endpoints"
+        assert request.method == "GET"
+        return response(200, self.GET_FLAPPING_ENDPOINTS_RESPONSE, None, None, 5, request)
+
+    GET_FLAPPING_METRICS_RESPONSE = (
+        """{"status": {"message": "Success", "code": "200"}, "data": [{"endpoint_group": "ARGO_MON", "service":"""
+        """ "www.example.com-web", "endpoint": "https://www.example.com", "metric": "generic.http.connect","""
+        """ "flapping": 5}, {"endpoint_group": "ARGO_MON2", "service": "www.example.com-api", "endpoint":"""
+        """ "https://api.example.com", "metric": "generic.http.connect", "flapping": 1 }]}"""
+    )
+
+    get_flapping_metrics_urlmatch = dict(
+        netloc="localhost", path="/api/v2/trends/REPORT01/flapping/metrics", method="GET"
+    )
+
+    @urlmatch(**get_flapping_metrics_urlmatch)
+    def get_flapping_metrics_mock(self, url, request):
+        assert url.path == "/api/v2/trends/REPORT01/flapping/metrics"
+        assert request.method == "GET"
+        return response(200, self.GET_FLAPPING_METRICS_RESPONSE, None, None, 5, request)
+
+    GET_FLAPPING_METRIC_TAGS_RESPONSE = (
+        """{"status": {"message": "Success", "code": "200"}, "data": ["""
+        """ {"tag": "http", "top": ["""
+        """ {"endpoint_group": "ARGO_MON", "service":"""
+        """ "www.example.com-web", "endpoint": "https://www.example.com", "metric": "generic.http.connect","""
+        """ "flapping": 5}, {"endpoint_group": "ARGO_MON2", "service": "www.example.com-api", "endpoint":"""
+        """ "https://api.example.com", "metric": "generic.http.connect", "flapping": 1 }"""
+        """ ]},"""
+        """ {"tag": "network", "top": ["""
+        """ {"endpoint_group": "ARGO_MON", "service":"""
+        """ "www.example.com-web", "endpoint": "https://www.example.com", "metric": "generic.http.connect","""
+        """ "flapping": 5}, {"endpoint_group": "ARGO_MON2", "service": "www.example.com-api", "endpoint":"""
+        """ "https://api.example.com", "metric": "generic.http.connect", "flapping": 1 }"""
+        """ ]}"""
+        """]}"""
+    )
+
+    get_flapping_metric_tags_urlmatch = dict(
+        netloc="localhost", path="/api/v2/trends/REPORT01/flapping/metrics/tags", method="GET"
+    )
+
+    @urlmatch(**get_flapping_metric_tags_urlmatch)
+    def get_flapping_metric_tags_mock(self, url, request):
+        assert url.path == "/api/v2/trends/REPORT01/flapping/metrics/tags"
+        assert request.method == "GET"
+        return response(200, self.GET_FLAPPING_METRIC_TAGS_RESPONSE, None, None, 5, request)
+
+
 class IssueMocks(object):
     GET_ENDPOINT_METRIC_RESULT_RESPONSE = (
         """{"root": [{"Name": "www.example.com_ABCD","info": {"ID": "ABCD","URL":"""

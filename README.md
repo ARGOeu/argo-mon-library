@@ -51,6 +51,7 @@ In the `examples` folder, you may find the following library usage examples:
 * getting daily/monthy A/R results for groups defined in a report
 * getting information on issues for endpoints or metrics under a report
 * getting metric results for an endpoint 
+* getting flapping trends
 
 Help on running each example is available by running the example with `-h`.
 
@@ -109,6 +110,19 @@ python3 ./examples/get_issues.py --host api.devel.mon.argo.grnet.gr --api-key ~/
 ```
 
 where the `date` parameter works the same as in the previous example, and the `endpoint` parameter defines the endpoint of interest. Optionally, the parameters `status` and `metric` may be added, in order to filter by specific criticality or metric. If a metric has been specified, an optional `timestamp` parameter may be added as well, in order to pinpoint the returned details to a specific event.
+
+### Getting flapping trends
+
+One cat get a list of flapping trends under a specific report with respect to endpoint groups, services, endpoints, or metrics by running
+
+```bash
+python3 ./examples/get_flapping_trends.py --host api.devel.mon.argo.grnet.gr --api-key ~/mon.key -f --report REPORTNAME --type FLAPTYPE --start-date YYYY-MM-DD --end-date YYYY-MM-DD
+```
+
+where start and end date parameters are optional (default is current date) and `FLAGTYPE` is one of `GROUPS`, `SERVICES`, `ENDPOINTS`, `METRICS`, `METRICS_TAGS`. In the case of `METRIC_TAGS`, the optional parameter `--ext-tags` may be specified in order to print out data about metrics per tag, in addition to tags themselves. Additionally,
+
+* The optional argument `--monthly` may be specified to fetch results with a monthy granularity, instead of daily, when `start-date` and `end-date` are distinct
+* The optional argument `--top TOP` may be specified to fetch up to `TOP` results 
 
 ## Environment variables
 

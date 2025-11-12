@@ -5,6 +5,7 @@ from .issues import Issues
 from .reportresults import ReportResults
 from .reportstatus import ReportStatus
 from .restresource import RestResourceItem, RestResourceList
+from .trends import Trends
 
 
 class ReportThresholds(object):
@@ -166,6 +167,10 @@ class Report(RestResourceItem):
     @property
     def issues(self):
         return Issues(self)
+
+    @property
+    def trends(self):
+        return Trends(self)
 
     @property
     def info(self):
